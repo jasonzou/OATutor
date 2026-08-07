@@ -8,7 +8,7 @@ const readdir = util.promisify(fs.readdir)
 const lstat = util.promisify(fs.lstat)
 const writeFile = util.promisify(fs.writeFile)
 const mkdir = util.promisify(fs.mkdir)
-const rm = util.promisify(fs.rm)
+const rm = fs.rm ? util.promisify(fs.rm) : util.promisify(fs.rmdir)
 
 if (+process.versions.node.split(".")[0] < 10) {
     console.debug('Please upgrade to node v10.12.X+')
