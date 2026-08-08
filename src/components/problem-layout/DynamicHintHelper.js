@@ -1,18 +1,21 @@
 import { renderGPTText } from "../../platform-logic/renderText.js";
-import AWS from "aws-sdk";
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY } from "../../util/runtimeEnv";
 
+// aws-sdk is large and only needed for the (offline-disabled) dynamic-hint
+// feature, so it is loaded lazily inside fetchDynamicHint and thus excluded
+// from the desktop bundle.
 export async function fetchDynamicHint(
-    DYNAMIC_HINT_URL, 
-    promptParameters, 
+    DYNAMIC_HINT_URL,
+    promptParameters,
     onChunkReceived,
     onSuccessfulCompletion,
     onError,
-    problemID, 
-    variabilization, 
+    problemID,
+    variabilization,
     context
     ) {
     try {
+        const AWS = (await import("aws-sdk")).default;
         AWS.config.update({
             accessKeyId: AWS_ACCESS_KEY,
             secretAccessKey: AWS_SECRET_ACCESS_KEY,

@@ -33,12 +33,14 @@ import SessionExpired from "./pages/SessionExpired";
 import { Posts } from "./pages/Posts/Posts";
 import loadFirebaseEnvConfig from "./util/loadFirebaseEnvConfig";
 import generateRandomInt from "./util/generateRandomInt";
+import { persistToDesktop } from "./util/desktopStorage";
 import { cleanObjectKeys } from "./util/cleanObject";
 import GlobalErrorBoundary from "./components/GlobalErrorBoundary";
 import { IS_STAGING_OR_DEVELOPMENT } from "./util/getBuildType";
 import { COMMIT_HASH, BUILD_TIMESTAMP } from "./util/runtimeEnv";
 import TabFocusTrackerWrapper from "./components/TabFocusTrackerWrapper";
 import ViewAllProblems from "./components/problem-layout/ViewAllProblems";
+import TextbookReader from "./components/TextbookReader";
 
 // ### BEGIN CUSTOMIZABLE IMPORTS ###
 import config from "./config/firebaseConfig.js";
@@ -90,6 +92,7 @@ class App extends React.Component {
         if (!userId) {
             userId = generateRandomInt().toString();
             localStorage.setItem(USER_ID_STORAGE_KEY, userId);
+            persistToDesktop(USER_ID_STORAGE_KEY, userId);
         }
         this.userID = userId;
         this.bktParams = this.getTreatmentObject(treatmentMapping.bktParams);
@@ -429,6 +432,10 @@ class App extends React.Component {
                                                 {...props}
                                             />
                                         )}
+                                    />
+                                    <Route
+                                        path="/textbook/:bookId/:section"
+                                        component={TextbookReader}
                                     />
                                     <Route component={NotFound} />
                                 </Switch>

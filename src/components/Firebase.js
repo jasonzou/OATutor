@@ -7,14 +7,9 @@ import {
     MAX_BUFFER_SIZE,
 } from "../config/config.js";
 
-import { initializeApp } from "firebase/app";
-import {
-    arrayUnion,
-    doc,
-    getFirestore,
-    serverTimestamp,
-    setDoc,
-} from "firebase/firestore";
+// The Firebase SDK is loaded lazily (see _init) so it can be excluded from the
+// offline/desktop bundle. These are populated on first use when ENABLE_FIREBASE.
+let initializeApp, arrayUnion, doc, getFirestore, serverTimestamp, setDoc;
 import daysSinceEpoch from "../util/daysSinceEpoch";
 import {
     IS_PRODUCTION,
@@ -37,14 +32,28 @@ class Firebase {
             console.debug("Not using firebase for logging");
             return;
         }
-        const app = initializeApp(credentials);
-
         this.oats_user_id = oats_user_id;
-        this.db = getFirestore(app);
         this.treatment = treatment;
         this.siteVersion = siteVersion;
         this.mouseLogBuffer = [];
         this.ltiContext = ltiContext;
+        // Lazily import + initialize the Firebase SDK on first use.
+        this._ready = this._init(credentials);
+    }
+
+    async _init(credentials) {
+        const [appMod, fsMod] = await Promise.all([
+            import("firebase/app"),
+            import("firebase/firestore"),
+        ]);
+        initializeApp = appMod.initializeApp;
+        arrayUnion = fsMod.arrayUnion;
+        doc = fsMod.doc;
+        getFirestore = fsMod.getFirestore;
+        serverTimestamp = fsMod.serverTimestamp;
+        setDoc = fsMod.setDoc;
+        const app = initializeApp(credentials);
+        this.db = getFirestore(app);
     }
 
     getCollectionName(targetCollection) {
@@ -78,6 +87,7 @@ class Firebase {
         partitionFn = daysSinceEpoch
     ) {
         if (!ENABLE_FIREBASE) return;
+        await this._ready;
         const collection = this.getCollectionName(_collection);
         const payload = this.addMetaData(data, true);
 
@@ -111,6 +121,7 @@ class Firebase {
     */
     async writeData(_collection, data) {
         if (!ENABLE_FIREBASE) return;
+        await this._ready;
         const collection = this.getCollectionName(_collection);
         const payload = this.addMetaData(data);
 

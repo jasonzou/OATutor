@@ -18,6 +18,8 @@ import Popup from '../Popup/Popup.js';
 import About from '../../pages/Posts/About.js';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import { LocalizationConsumer } from '../../util/LocalizationContext';
+import { textbookSectionUrl, sectionNumberOfLesson, bookIdForCourse } from '../../util/textbookLink';
+import { openExternalOnClick } from '../../util/openExternal';
 
 class LessonSelection extends React.Component {
     static contextType = ThemeContext;
@@ -142,6 +144,9 @@ class LessonSelection extends React.Component {
                                             </Grid>
                                         )
                                     : this.coursePlans[this.props.courseNum].lessons.map((lesson, i) => {
+                                        const courseName = this.coursePlans[this.props.courseNum].courseName;
+                                        const sectionNumber = sectionNumberOfLesson(lesson);
+                                        const sectionUrl = textbookSectionUrl(courseName, sectionNumber);
                                         return (
                                             <Grid item xs={12} sm={6} md={4} key={i}>
     <center>
@@ -160,6 +165,30 @@ class LessonSelection extends React.Component {
           {lesson.name.replace(/##/g, "")}
         </h2>
         <h3 style={{ marginTop: 5 }}>{lesson.topics}</h3>
+        {sectionUrl && (
+          <div style={{ fontSize: 12, marginBottom: 8 }}>
+            📖&nbsp;
+            <a
+              href={sectionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={openExternalOnClick(sectionUrl)}
+            >
+              Open section {sectionNumber} in OpenStax
+            </a>
+            {bookIdForCourse(courseName) && (
+              <>
+                &nbsp;·&nbsp;
+                <a
+                  href={`#/textbook/${bookIdForCourse(courseName)}/${sectionNumber}`}
+                  onClick={() => this.props.history.push(`/textbook/${bookIdForCourse(courseName)}/${sectionNumber}`)}
+                >
+                  Read offline
+                </a>
+              </>
+            )}
+          </div>
+        )}
 
         <Button
           variant="contained"

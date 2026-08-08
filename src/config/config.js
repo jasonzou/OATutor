@@ -4,7 +4,7 @@ import { calculateSemester } from "../util/calculateSemester.js";
 
 import { SITE_NAME } from "@common/global-config";
 import { cleanObjectKeys } from "../util/cleanObject";
-import { AI_HINT_GENERATION_AWS_ENDPOINT } from "../util/runtimeEnv";
+import { AI_HINT_GENERATION_AWS_ENDPOINT, IS_DESKTOP } from "../util/runtimeEnv";
 
 const ThemeContext = React.createContext(0);
 const SITE_VERSION = "1.7";
@@ -40,20 +40,20 @@ const SHOW_COPYRIGHT = false;
  * feedback, user interactions, and site logs.
  * @type {boolean}
  */
-const ENABLE_FIREBASE = true;
+const ENABLE_FIREBASE = !IS_DESKTOP;
 
 /**
  * If ENABLE_FIREBASE, indicates whether the site should use Firebase to store, process, and analyze general user
  * interactions.
  * @type {boolean}
  */
-const DO_LOG_DATA = true;
+const DO_LOG_DATA = !IS_DESKTOP;
 
 /**
  * Indicates whether a log event should be fired everytime a user leaves or returns to this window.
  * @type {boolean}
  */
-const DO_FOCUS_TRACKING = true;
+const DO_FOCUS_TRACKING = !IS_DESKTOP;
 
 /**
  * If DO_LOG_DATA is enabled, indicates whether the site should also track user mouse interactions with the site. See

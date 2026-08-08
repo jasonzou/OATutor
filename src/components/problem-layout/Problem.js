@@ -18,6 +18,11 @@ import { NavLink } from "react-router-dom";
 import HelpOutlineOutlinedIcon from "@material-ui/icons/HelpOutlineOutlined";
 import FeedbackOutlinedIcon from "@material-ui/icons/FeedbackOutlined";
 import withTranslation from "../../util/withTranslation.js"
+import {
+    textbookSectionUrl,
+    sectionNumberOfProblem,
+} from "../../util/textbookLink";
+import { openExternalOnClick } from "../../util/openExternal";
 
 import {
     CANVAS_WARNING_STORAGE_KEY,
@@ -464,6 +469,8 @@ class Problem extends React.Component {
         const { classes, problem, seed } = this.props;
         const [oerLink, oerName, licenseLink, licenseName] =
             this.getOerLicense();
+        const sectionNumber = sectionNumberOfProblem(problem);
+        const sectionUrl = textbookSectionUrl(problem.courseName, sectionNumber);
         const { showPopup } = this.state;
         if (problem == null) {
             return <div></div>;
@@ -621,6 +628,19 @@ class Problem extends React.Component {
                         }}
                     >
                         <div style={{ marginLeft: 20, fontSize: 12 }}>
+                            {sectionUrl && (
+                                <div style={{ marginBottom: 4 }}>
+                                    📖&nbsp;
+                                    <a
+                                        href={sectionUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={openExternalOnClick(sectionUrl)}
+                                    >
+                                        Open section {sectionNumber} in OpenStax
+                                    </a>
+                                </div>
+                            )}
                             {licenseName !== "" && licenseLink !== "" ? (
                                 <div>
                                     "{problem.title}" {translate('problem.Derivative')}&nbsp;
