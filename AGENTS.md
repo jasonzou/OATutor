@@ -182,6 +182,32 @@ for `npm test`**; dev and build no longer use them.
   external `CAHLR/OATutor-Tooling` Python scripts to regenerate
   `content-pool/` then run the preprocessor. Don't hand-edit that generated
   content on `content-staging`.
+- **`vue` branch** hosts a parallel **Vue 3 rewrite** of the frontend in
+  `desktop-vue/` (clean rewrite; the React app in `src/` is kept as the live
+  reference during migration). See "Vue rewrite (desktop-vue/)" below.
+
+## Vue rewrite (`desktop-vue/`)
+
+- A standalone **pnpm** project (own `package.json`, `pnpm-lock.yaml`,
+  `node_modules`). UI stack mirrors `showy-naive-starter`: **Vue 3 + TypeScript
+  + Vite + UnoCSS + Naive UI** with `unplugin-auto-import` (vue/vue-router/
+  naive composables) + `unplugin-vue-components` (`NaiveUiResolver`, so
+  `NCard`/`NButton`/etc. need no import). Hash history (`createWebHashHistory`)
+  for Tauri compatibility.
+- It **reuses the framework-agnostic OATutor core** from the React app via the
+  `@core` alias (`@core/util/textbookLink`, `@core/util/openExternal`,
+  `@core/content-sources/...`). Do not duplicate that logic — import it. Also
+  aliased: `@` -> `desktop-vue/src`, `@generated` -> repo `generated/`.
+- Commands (run from `desktop-vue/`, needs Node >=18 / pnpm 11):
+  `pnpm install` · `pnpm dev` (port 3002) · `pnpm build` (vue-tsc + vite) ·
+  `pnpm typecheck`.
+- pnpm 11 gates build scripts; `pnpm-workspace.yaml` sets
+  `dangerouslyAllowAllBuilds: true` (esbuild/@parcel/watcher/vue-demi) so
+  `pnpm install` doesn't fail on ignored builds.
+- Status (Phase 0): scaffolded; `src/views/LessonSelection.vue` ported as the
+  first screen (Naive UI cards/select + UnoCSS grid + the contextual textbook
+  link via the shared core). Remaining components (ProblemCard, Problem,
+  Platform, inputs, mathlive) port per the conversion plan.
 
 ## Where things live (entrypoints)
 

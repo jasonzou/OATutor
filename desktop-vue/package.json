@@ -1,0 +1,37 @@
+{
+  "name": "oatutor-desktop-vue",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev": "vite --port 3002",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:fast": "vite build",
+    "preview": "vite preview --port 3002",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-opener": "^2.5.4",
+    "@vueuse/core": "^11.1.0",
+    "naive-ui": "^2.44.1",
+    "pinia": "^2.2.4",
+    "vue": "^3.5.41",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.122",
+    "@types/node": "^22.7.9",
+    "@unocss/preset-rem-to-px": "^66.7.5",
+    "@unocss/reset": "^66.7.5",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "sass": "^1.80.3",
+    "typescript": "^5.6.3",
+    "unocss": "^66.7.5",
+    "unplugin-auto-import": "^0.18.3",
+    "unplugin-vue-components": "^0.27.4",
+    "vite": "^5.4.10",
+    "vue-tsc": "^2.1.6"
+  }
+}

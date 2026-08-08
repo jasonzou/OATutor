@@ -1,0 +1,10 @@
+# Root OATutor (Vite + React). pnpm 11+ reads non-auth settings here, not .npmrc.
+#
+# equation-editor-react (a root dependency from a tarball URL) pulls `mathquill`
+# in as a URL-based *transitive* dependency; blockExoticSubdeps (default true
+# since pnpm 10.26) rejects that, so allow exotic subdependencies.
+blockExoticSubdeps: false
+
+# pnpm 11 gates build scripts by default; Vite's esbuild/@parcel/watcher and
+# other native deps need their postinstall builds to run.
+dangerouslyAllowAllBuilds: true
