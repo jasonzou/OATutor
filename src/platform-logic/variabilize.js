@@ -1,4 +1,4 @@
-var gen = require('random-seed');
+import gen from 'random-seed';
 
 // Replace variables with their values in a string of text
 function variabilize(text, variabilization) {

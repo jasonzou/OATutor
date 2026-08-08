@@ -1,5 +1,7 @@
+import { BUILD_TIMESTAMP } from "../util/runtimeEnv";
+
 export default function BuildTimeIndicator (props) {
-    const buildTime = +process.env.REACT_APP_BUILD_TIMESTAMP
+    const buildTime = +BUILD_TIMESTAMP
 
     if (isNaN(buildTime)) {
         return <></>

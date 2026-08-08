@@ -27,7 +27,7 @@ import { CONTENT_SOURCE } from "@common/global-config";
 import withTranslation from '../util/withTranslation';
 import { LocalizationConsumer } from '../util/LocalizationContext';
 
-let problemPool = require(`@generated/processed-content-pool/${CONTENT_SOURCE}.json`);
+import { getContentPool } from "../util/contentPool";
 
 let seed = Date.now().toString();
 console.log("Generated seed");
@@ -39,7 +39,7 @@ class Platform extends React.Component {
         super(props);
         
         this.problemIndex = {
-            problems: problemPool,
+            problems: getContentPool(),
         };
         this.completedProbs = new Set();
         this.lesson = null;

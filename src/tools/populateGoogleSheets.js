@@ -17,8 +17,8 @@ const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
 
 const COLLECTION_NAME = "feedbacks";
 
-const { calculateSemester } = require("../util/calculateSemester")
-const CURRENT_SEMESTER = calculateSemester(Date.now())
+let calculateSemester;
+let CURRENT_SEMESTER;
 const SHEET_NAME = `All Feedbacks`
 
 const COLUMN_NAME_MAPPING = {
@@ -48,6 +48,8 @@ if (!Object.fromEntries) {
 
 ;(async () => {
     let err;
+    ({ calculateSemester } = await import("../util/calculateSemester.js"));
+    CURRENT_SEMESTER = calculateSemester(Date.now());
     [err] = await to(doc.useServiceAccountAuth(sheetsServiceAccount));
     if (err) {
         console.debug(err.message)

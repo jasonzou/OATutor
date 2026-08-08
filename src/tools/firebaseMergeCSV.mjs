@@ -5,6 +5,7 @@ import ora from "ora";
 import path from "path";
 import neatCsv from "neat-csv";
 import { createTypedEntry, dedupeEntries, parseEntry } from "../util/objectEntryTools.mjs";
+import { calculateSemester } from "../util/calculateSemester.js";
 import { createRequire } from "module";
 import { config } from "dotenv";
 import util from "util";
@@ -13,7 +14,6 @@ import fs from "fs";
 import ObjectsToCsv from "objects-to-csv";
 
 const require = createRequire(import.meta.url)
-const { calculateSemester } = require("../util/calculateSemester.js");
 
 config({
     path: './.env.local'

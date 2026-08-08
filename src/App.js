@@ -36,6 +36,7 @@ import generateRandomInt from "./util/generateRandomInt";
 import { cleanObjectKeys } from "./util/cleanObject";
 import GlobalErrorBoundary from "./components/GlobalErrorBoundary";
 import { IS_STAGING_OR_DEVELOPMENT } from "./util/getBuildType";
+import { COMMIT_HASH, BUILD_TIMESTAMP } from "./util/runtimeEnv";
 import TabFocusTrackerWrapper from "./components/TabFocusTrackerWrapper";
 import ViewAllProblems from "./components/problem-layout/ViewAllProblems";
 
@@ -102,9 +103,9 @@ class App extends React.Component {
         };
 
         if (IS_STAGING_OR_DEVELOPMENT) {
-            document["oats-meta-site-hash"] = process.env.REACT_APP_COMMIT_HASH;
+            document["oats-meta-site-hash"] = COMMIT_HASH;
             document["oats-meta-site-updatetime"] =
-                process.env.REACT_APP_BUILD_TIMESTAMP;
+                BUILD_TIMESTAMP;
         }
 
         const onLocationChange = () => {

@@ -1,4 +1,4 @@
-const { Enumify } = require("./enumify");
+import { Enumify } from "./enumify";
 
 class ToastID extends Enumify {
     static expired_session = new ToastID();

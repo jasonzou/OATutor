@@ -1,7 +1,6 @@
 const path = require("path");
 const fs = require("fs");
 const util = require('util');
-const { CONTENT_SOURCE } = require('../../common/global-config')
 
 const copyFile = util.promisify(fs.copyFile)
 const readdir = util.promisify(fs.readdir)
@@ -16,12 +15,13 @@ if (+process.versions.node.split(".")[0] < 10) {
 }
 
 // the current file should be in src/tools so ../content-sources/* should be src/content-sources/*
-const problemPoolPath = path.join(__dirname, '..', 'content-sources', CONTENT_SOURCE, 'content-pool')
-const generatedPath = path.join(__dirname, '..', '..', 'generated', 'processed-content-pool')
-const poolFilePath = path.join(generatedPath, `${CONTENT_SOURCE}.json`)
-const staticFiguresPath = path.join(__dirname, '..', '..', 'public', 'static', 'images', 'figures', CONTENT_SOURCE)
-
 ;(async () => {
+    const { CONTENT_SOURCE } = await import('../../common/global-config.js')
+    const problemPoolPath = path.join(__dirname, '..', 'content-sources', CONTENT_SOURCE, 'content-pool')
+    const generatedPath = path.join(__dirname, '..', '..', 'generated', 'processed-content-pool')
+    const poolFilePath = path.join(generatedPath, `${CONTENT_SOURCE}.json`)
+    const staticFiguresPath = path.join(__dirname, '..', '..', 'public', 'static', 'images', 'figures', CONTENT_SOURCE)
+
     // let hasPrevPool = true, config = {};
     // await access(poolFilePath).catch(err => {
     //   hasPrevPool = false

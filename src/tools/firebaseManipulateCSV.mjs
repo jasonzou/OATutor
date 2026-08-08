@@ -11,10 +11,10 @@ import neatCsv from 'neat-csv';
 import { EOL } from 'os';
 import ObjectsToCsv from "objects-to-csv";
 import { createTypedEntry, dedupeEntries, isObject, parseEntry } from "../util/objectEntryTools.mjs";
+import { calculateSemester } from "../util/calculateSemester.js";
 import { createRequire } from 'module'
 
 const require = createRequire(import.meta.url)
-const { calculateSemester } = require("../util/calculateSemester.js");
 
 config({
     path: './.env.local'

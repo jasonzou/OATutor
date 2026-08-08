@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <link href="/favicon.png" rel="icon"/>
+    <link href="https://fonts.googleapis.com/css?family=Titillium+Web:300,400,700" rel="stylesheet">
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <meta content="#000000" name="theme-color"/>
+    <meta content="An Open, Adaptive, and Intelligent Tutoring System that takes two clicks to set up." name="description"/>
+    <link href="/favicon.png" rel="apple-touch-icon"/>
+    <link href="/manifest.json" rel="manifest"/>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [["$$", "$$"]],
+                displayMath: [["\\[", "\\]"]],
+            },
+            chtml: {
+                fontURL: "/mathjax/output/chtml/fonts/woff-v2",
+            },
+            startup: {
+                pageReady: () => {
+                    // Math is typeset on demand by the MathText component; skip
+                    // scanning the whole document on page load.
+                    return Promise.resolve();
+                },
+                ready: () => {
+                    MathJax.startup.defaultReady();
+                },
+            },
+        };
+    </script>
+    <script src="/mathjax/tex-chtml.js"></script>
+    <title>OATutor</title>
+</head>
+
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="root"></div>
+<script type="module" src="/src/index.js"></script>
+</body>
+
+</html>

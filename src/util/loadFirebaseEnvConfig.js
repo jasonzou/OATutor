@@ -1,8 +1,9 @@
 import { IS_STAGING } from "./getBuildType";
+import { FIREBASE_CONFIG } from "./runtimeEnv";
 
 function loadFirebaseEnvConfig(config) {
     try {
-        let _rawEnvConfig = process.env.REACT_APP_FIREBASE_CONFIG.trim();
+        let _rawEnvConfig = FIREBASE_CONFIG.trim();
         if (_rawEnvConfig.indexOf(":") !== -1) {
             // is probably in the format of "Secret value:eyJhcG........"
             _rawEnvConfig = _rawEnvConfig.substr(_rawEnvConfig.lastIndexOf(":") + 1).trim();

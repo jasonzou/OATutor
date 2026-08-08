@@ -45,7 +45,7 @@ const SetUpCanvasIntegration = () => {
                 src={`${process.env.PUBLIC_URL}/static/images/posts/setting-up-canvas-integration/courses%20selection.PNG`}/>
         </div>
 
-        Navigate to the Settings > Apps tab of that course. Then click on the blue "+ App" button.
+        Navigate to the Settings &gt; Apps tab of that course. Then click on the blue "+ App" button.
 
         <div className={clsx(classes.fullWidth, classes.textCenter, classes["p-8"])}>
             <ZoomImage

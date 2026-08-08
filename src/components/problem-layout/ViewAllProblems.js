@@ -24,6 +24,7 @@ import ProblemWrapper from '@components/problem-layout/ProblemWrapper';
 import { findLessonById, ThemeContext, SHOW_COPYRIGHT, SITE_NAME } from '../../config/config.js';
 import { CONTENT_SOURCE } from '@common/global-config';
 import withTranslation from '../../util/withTranslation.js';
+import { getContentPool } from '../../util/contentPool';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -91,9 +92,7 @@ const ViewAllProblems = ({ translate }) => {
 
   // Load pool
   useEffect(() => {
-    import(`@generated/processed-content-pool/${CONTENT_SOURCE}.json`)
-      .then(m => setProblemPool(m.default || []))
-      .catch(console.error);
+    setProblemPool(getContentPool() || []);
   }, []);
 
   // Find lesson

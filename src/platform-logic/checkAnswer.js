@@ -4,7 +4,7 @@ import { parseMatrixTex } from "../util/parseMatrixTex";
 import { IS_DEVELOPMENT, IS_STAGING_OR_DEVELOPMENT } from "../util/getBuildType";
 import WrongAnswerReasons from "../util/wrongAnswerReasons";
 
-const KAS = require('../kas.js');
+import KAS from '../kas.js';
 
 if (IS_DEVELOPMENT) {
     window.KAS = KAS

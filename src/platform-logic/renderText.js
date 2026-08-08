@@ -1,5 +1,5 @@
 import React from "react";
-import { InlineMath } from "react-katex";
+import MathText from "@components/MathText";
 import { dynamicText } from "../config/config.js";
 import { variabilize, chooseVariables } from "./variabilize.js";
 import Spacer from "@components/Spacer";
@@ -46,17 +46,12 @@ function renderText(text, problemID, variabilization, context) {
                 }
                 return (
                     <ErrorBoundary
-                        componentName={"InlineMath"}
+                        componentName={"MathText"}
                         replacement={part}
                         inline
                         key={Math.random() * 2 ** 16}
                     >
-                        <InlineMath
-                            math={part}
-                            renderError={(error) => {
-                                throw error;
-                            }}
-                        />
+                        <MathText math={part} />
                     </ErrorBoundary>
                 );
             }
@@ -130,17 +125,12 @@ function renderGPTText(text, problemID, variabilization, context) {
                 }
                 return (
                     <ErrorBoundary
-                        componentName={"InlineMath"}
+                        componentName={"MathText"}
                         replacement={part}
                         inline
                         key={Math.random() * 2 ** 16}
                     >
-                        <InlineMath
-                            math={part}
-                            renderError={(error) => {
-                                throw error;
-                            }}
-                        />
+                        <MathText math={part} />
                     </ErrorBoundary>
                 );
             }

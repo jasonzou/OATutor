@@ -1,14 +1,8 @@
 /*! KAS | https://github.com/Khan/KAS */
 // This is a @generated file
-var _, KAS = {};
-
-if (typeof module === "object" && module.exports) {
-    _ = require("underscore");
-    module.exports = KAS;
-} else {
-    _ = window._;
-    window.KAS = KAS;
-}
+import _ from "underscore";
+var KAS = {};
+export default KAS;
 
 (function(KAS) {
 

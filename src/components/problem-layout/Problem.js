@@ -95,10 +95,8 @@ class Problem extends React.Component {
                 .substring((lesson?.courseName || "").indexOf(":") + 1)
                 .trim() || "";
 
-        // query selects all katex annotation and adds aria label attribute to it
-        for (const annotation of document.querySelectorAll("annotation")) {
-            annotation.ariaLabel = annotation.textContent;
-        }
+        // MathJax exposes math to assistive technology via its own assistive
+        // MathML (no KaTeX-style <annotation> elements to label).
     }
 
     componentWillUnmount() {

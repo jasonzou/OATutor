@@ -1,4 +1,6 @@
-const buildType = process.env.REACT_APP_BUILD_TYPE || ""
+import { BUILD_TYPE } from "./runtimeEnv";
+
+const buildType = BUILD_TYPE
 
 console.debug(`This has the build type: ${buildType}`)
 

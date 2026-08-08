@@ -9,7 +9,7 @@ import Box from "@material-ui/core/Box";
 import BrandLogoNav from "@components/BrandLogoNav";
 import { CONTENT_SOURCE } from "@common/global-config";
 
-let problemPool = require(`@generated/processed-content-pool/${CONTENT_SOURCE}.json`)
+import { getContentPool } from "../util/contentPool";
 
 let seed = Date.now().toString();
 console.log("Generated seed");
@@ -21,7 +21,7 @@ class DebugPlatform extends React.Component {
         context.debug = true;
         super(props);
         this.problemIndex = {
-            problems: problemPool
+            problems: getContentPool()
         };
         this.completedProbs = new Set();
         this.lesson = null;
@@ -77,7 +77,7 @@ class DebugPlatform extends React.Component {
         this.setState({ seed: seed }, () => console.log(seed));
         context.debug = true;
         this.problemIndex = {
-            problems: problemPool
+            problems: getContentPool()
         };
         this.completedProbs = new Set();
         this.lesson = null;
