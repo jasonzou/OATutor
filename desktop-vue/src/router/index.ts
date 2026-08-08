@@ -1,10 +1,24 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-// Hash history so routing works under the Tauri webview (mirrors the React app's
-// HashRouter). Routes grow as screens are ported (Phase 1+ of the conversion).
+// Routes mirror the React app's App.js. Not-yet-ported screens point at
+// Placeholder.vue; they're swapped to real views as components are converted
+// (Problem/Platform -> Phase 3, TextbookReader -> Phase 4, etc.).
+const Placeholder = () => import('@/views/Placeholder.vue')
+
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', name: 'lessons', component: () => import('@/views/LessonSelection.vue') },
+    { path: '/', name: 'home', component: () => import('@/views/LessonSelection.vue') },
+    { path: '/demo/input', name: 'inputDemo', component: () => import('@/views/InputDemo.vue') },
+    { path: '/courses/:courseNum', name: 'course', component: Placeholder, props: { title: 'Course lessons' } },
+    { path: '/lessons/:id', name: 'lesson', component: Placeholder, props: { title: 'Lesson / problem runner' } },
+    { path: '/lessons/:id/problems', name: 'lessonProblems', component: Placeholder, props: { title: 'All problems' } },
+    { path: '/debug/:id', name: 'debug', component: Placeholder, props: { title: 'Debug' } },
+    { path: '/textbook/:book/:section', name: 'textbook', component: Placeholder, props: { title: 'Textbook reader' } },
+    { path: '/posts', name: 'posts', component: Placeholder, props: { title: 'Posts' } },
+    { path: '/assignment-not-linked', component: Placeholder, props: { title: 'Assignment not linked' } },
+    { path: '/assignment-already-linked', component: Placeholder, props: { title: 'Assignment already linked' } },
+    { path: '/session-expired', component: Placeholder, props: { title: 'Session expired' } },
+    { path: '/:pathMatch(.*)*', name: 'notFound', component: () => import('@/views/NotFound.vue') },
   ],
 })

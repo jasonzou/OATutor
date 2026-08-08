@@ -1,5 +1,5 @@
-// uno.config — modeled on showy-naive-starter. rem->px (base 14), iconify icons
-// (lucide), attributify + typography presets, and a few layout shortcuts.
+// uno.config — modeled on showy-naive-starter. `dark: 'class'` so dark variants
+// follow the app theme toggle (class toggled on <html> in App.vue).
 import presetRemToPx from '@unocss/preset-rem-to-px'
 import {
   defineConfig,
@@ -12,6 +12,7 @@ import {
 } from 'unocss'
 
 export default defineConfig({
+  dark: 'class',
   presets: [
     presetUno(),
     presetIcons({

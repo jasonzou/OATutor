@@ -1,0 +1,10 @@
+// Framework-agnostic config for the Vue app, reusing the shared core in ../src
+// and ../common. Grows as more screens are ported.
+import { SITE_NAME } from '@common/global-config'
+import { BUILD_TIMESTAMP, IS_DESKTOP } from '@core/util/runtimeEnv'
+
+export const AVAILABLE_LANGUAGES = ['en', 'es', 'se'] as const
+export type Language = (typeof AVAILABLE_LANGUAGES)[number]
+export const DEFAULT_LANGUAGE: Language = 'en'
+
+export { SITE_NAME, IS_DESKTOP, BUILD_TIMESTAMP }

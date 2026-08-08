@@ -11,7 +11,11 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      // mathlive registers <math-field> as a custom element; tell Vue's compiler
+      // to pass it through instead of treating it as a Vue component.
+      template: { compilerOptions: { isCustomElement: tag => tag === 'math-field' } },
+    }),
     UnoCSS(),
     AutoImport({
       dts: 'src/auto-imports.d.ts',
@@ -30,6 +34,7 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@core': fileURLToPath(new URL('../src', import.meta.url)),
+      '@common': fileURLToPath(new URL('../common', import.meta.url)),
       '@generated': fileURLToPath(new URL('../generated', import.meta.url)),
     },
   },

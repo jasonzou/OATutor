@@ -20,6 +20,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@core/*": ["../src/*"],
+      "@common/*": ["../common/*"],
       "@generated/*": ["../generated/*"]
     }
   },

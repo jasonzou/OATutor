@@ -1,14 +1,17 @@
 <script setup lang="ts">
-// First ported screen (Phase 0). Proves the stack end-to-end: Naive UI components
-// (auto-imported), UnoCSS layout utilities, and reuse of the OATutor framework-
-// agnostic core (@core/util/*) for contextual textbook linking.
+// Lesson selection (ported). Sits inside DefaultLayout (which supplies branding,
+// locale switch, dark toggle). Uses Naive UI cards/select + UnoCSS grid, and the
+// shared OATutor core for contextual textbook linking.
 import { openExternal } from '@core/util/openExternal'
 import { sectionNumberOfLesson, textbookSectionUrl } from '@core/util/textbookLink'
+import { useTranslation } from '@/shared/composables/useTranslation'
 import { courseNames, defaultCourseName, lessonsForCourse } from '@/shared/lessons'
+
+const { t } = useTranslation()
 
 const selectedCourse = ref(defaultCourseName())
 const courseOptions = computed(() =>
-  courseNames().map((name) => ({ label: name, value: name })),
+  courseNames().map(name => ({ label: name, value: name })),
 )
 const lessons = computed(() => lessonsForCourse(selectedCourse.value))
 
@@ -20,23 +23,21 @@ function openSection(courseName: string, lessonName: string) {
 
 <template>
   <div class="max-w-6xl mx-auto p-6">
-    <header class="flex-y-center justify-between mb-6">
-      <div class="flex-y-center gap-2">
-        <span class="i-lucide-graduation-cap text-2xl text-[#1976D2]" />
-        <h1 class="text-2xl font-bold m-0">
-          OATutor
-        </h1>
-      </div>
+    <div class="flex-y-center justify-between mb-4">
+      <h2 class="text-xl font-bold m-0">
+        {{ t('lessonSelection.welcomeTo') }} {{ t('lessonSelection.select') }}
+        {{ t('lessonSelection.course') }}
+      </h2>
       <NSelect
         v-model:value="selectedCourse"
         :options="courseOptions"
         filterable
         class="w-100"
       />
-    </header>
+    </div>
 
     <p class="text-gray-500 mb-4">
-      {{ lessons.length }} lessons · pick a course above
+      {{ lessons.length }} lessons
     </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -54,7 +55,7 @@ function openSection(courseName: string, lessonName: string) {
         </div>
         <div class="mt-4 flex gap-2">
           <NButton size="small" type="primary">
-            Start lesson
+            {{ t('lessonSelection.onlyselect') }}
           </NButton>
           <NButton
             v-if="textbookSectionUrl(selectedCourse, sectionNumberOfLesson(lesson))"
