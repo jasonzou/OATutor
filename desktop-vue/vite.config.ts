@@ -38,6 +38,9 @@ export default defineConfig({
       '@generated': fileURLToPath(new URL('../generated', import.meta.url)),
     },
   },
+  // Share the repo's public/ (mathjax, textbook, static figures) so the Vue app
+  // renders content identically to the React app.
+  publicDir: fileURLToPath(new URL('../public', import.meta.url)),
   build: { outDir: 'dist' },
   server: { port: 3002 },
 })

@@ -5,8 +5,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OATutor (Vue)</title>
-  <script type="module" crossorigin src="/assets/index-dfeJru9n.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-_Fy8nnJG.css">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$$', '$$']], displayMath: [['\\[', '\\]']] },
+      chtml: { fontURL: '/mathjax/output/chtml/fonts/woff-v2' },
+      startup: {
+        pageReady: () => Promise.resolve(), // typeset on demand per-node
+        ready: () => window.MathJax.startup.defaultReady(),
+      },
+    }
+  </script>
+  <script src="/mathjax/tex-chtml.js"></script>
+  <script type="module" crossorigin src="/assets/index-DLhlhPhV.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BfQ7lrdJ.css">
 </head>
 
 <body>

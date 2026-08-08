@@ -4,6 +4,11 @@
 // (textarea). MultipleChoice / GridInput / MatrixInput are stubbed here and
 // ported in the next step. Auto-detects MatrixInput from a \begin{matrix} answer.
 import MathField from '@/components/MathField.vue'
+import MultipleChoice from './MultipleChoice.vue'
+import GridInput from './GridInput.vue'
+import MatrixInput from './MatrixInput.vue'
+import { parseMatrixTex } from '@core/util/parseMatrixTex'
+import { shuffleArray } from '@core/util/shuffleArray'
 
 interface Step {
   problemType?: string
@@ -29,6 +34,8 @@ const props = withDefaults(
     index?: number
     showCorrectness?: boolean
     allowRetry?: boolean
+    keepMCOrder?: boolean
+    seed?: number
     keyboardType?: string
     debug?: boolean
   }>(),
@@ -65,6 +72,14 @@ const isString = computed(
 )
 const isEssay = computed(
   () => resolvedType.value === 'TextBox' && props.step.answerType === 'short-essay',
+)
+
+const mcChoices = computed(() => {
+  const c = props.step.choices ?? []
+  return props.keepMCOrder ? [...c].reverse() : shuffleArray(c, props.seed)
+})
+const matrixDefault = computed<string[][] | undefined>(() =>
+  props.debug ? parseMatrixTex(correctAnswer.value)?.[0] : undefined,
 )
 
 function setVal(v: string) {
@@ -112,8 +127,33 @@ onMounted(() => {
         @update:value="setVal"
       />
 
+      <MultipleChoice
+        v-else-if="resolvedType === 'MultipleChoice'"
+        :choices="mcChoices"
+        :model-value="modelValue"
+        @update:model-value="setVal"
+      />
+
+      <GridInput
+        v-else-if="resolvedType === 'GridInput'"
+        :num-rows="step.numRows"
+        :num-cols="step.numCols"
+        :default-value="matrixDefault"
+        :index="index"
+        @update:model-value="setVal"
+      />
+
+      <MatrixInput
+        v-else-if="resolvedType === 'MatrixInput'"
+        :num-rows="step.numRows"
+        :num-cols="step.numCols"
+        :default-value="matrixDefault"
+        :index="index"
+        @update:model-value="setVal"
+      />
+
       <NAlert v-else type="info" :show-icon="false">
-        {{ resolvedType }} input — ported in the next step.
+        Unknown problem type: {{ resolvedType }}
       </NAlert>
 
       <div v-if="step.units" class="mt-1 text-gray-500">
