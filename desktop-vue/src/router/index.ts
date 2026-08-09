@@ -13,7 +13,7 @@ export const router = createRouter({
     { path: '/demo/problem', name: 'problemDemo', component: () => import('@/views/ProblemDemo.vue') },
     { path: '/demo/lesson', name: 'lessonDemo', component: () => import('@/views/LessonDemo.vue') },
     { path: '/courses/:courseNum', name: 'course', component: Placeholder, props: { title: 'Course lessons' } },
-    { path: '/lessons/:id', name: 'lesson', component: Placeholder, props: { title: 'Lesson / problem runner' } },
+    { path: '/lessons/:id', name: 'lesson', component: () => import('@/views/Platform.vue') },
     { path: '/lessons/:id/problems', name: 'lessonProblems', component: Placeholder, props: { title: 'All problems' } },
     { path: '/debug/:id', name: 'debug', component: Placeholder, props: { title: 'Debug' } },
     { path: '/textbook/:book/:section', name: 'textbook', component: Placeholder, props: { title: 'Textbook reader' } },

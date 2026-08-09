@@ -8,6 +8,7 @@ import { useTranslation } from '@/shared/composables/useTranslation'
 import { courseNames, defaultCourseName, lessonsForCourse } from '@/shared/lessons'
 
 const { t } = useTranslation()
+const router = useRouter()
 
 const selectedCourse = ref(defaultCourseName())
 const courseOptions = computed(() =>
@@ -54,7 +55,7 @@ function openSection(courseName: string, lessonName: string) {
           {{ lesson.topics }}
         </div>
         <div class="mt-4 flex gap-2">
-          <NButton size="small" type="primary">
+          <NButton size="small" type="primary" @click="router.push(`/lessons/${lesson.id}`)">
             {{ t('lessonSelection.onlyselect') }}
           </NButton>
           <NButton

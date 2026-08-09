@@ -1,7 +1,10 @@
 <script setup lang="ts">
 // MultipleChoice (ported). Radio group. Reorders choices the same way the React
 // version did (anything containing " above" sinks to the end; others unshift).
-// Labels are plain text for now; a renderText() port can replace {{ choice }}.
+// Labels are run through RenderText so embedded $$latex$$ (e.g. in answers like
+// "$$[5,\infty)$$") typesets via MathJax.
+import RenderText from '@/components/RenderText.vue'
+
 const props = defineProps<{
   choices?: string[]
   modelValue?: string
@@ -26,7 +29,7 @@ function onChange(v: string) {
   <div class="mr-[5%] text-center">
     <NRadioGroup :value="modelValue" @update:value="onChange">
       <NRadio v-for="choice in ordered" :key="choice" :value="choice">
-        {{ choice }}
+        <RenderText :text="choice" :variabilization="variabilization" />
       </NRadio>
       <span v-if="!ordered.length" class="text-red-500">
         Error: This problem has no answer choices. Please submit feedback.

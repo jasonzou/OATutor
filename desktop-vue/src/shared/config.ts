@@ -9,6 +9,9 @@ export const DEFAULT_LANGUAGE: Language = 'en'
 
 export { SITE_NAME, IS_DESKTOP, BUILD_TIMESTAMP }
 
+// BKT mastery cutoff (from config.js).
+export const MASTERY_THRESHOLD = 0.95
+
 // Dynamic-text expansions (ported from config.js). Keys are replaced verbatim.
 export const dynamicText: Record<string, string> = {
   '%CAR%': 'Tesla car',
