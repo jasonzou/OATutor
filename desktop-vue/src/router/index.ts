@@ -10,6 +10,8 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: () => import('@/views/LessonSelection.vue') },
     { path: '/demo/input', name: 'inputDemo', component: () => import('@/views/InputDemo.vue') },
+    { path: '/demo/problem', name: 'problemDemo', component: () => import('@/views/ProblemDemo.vue') },
+    { path: '/demo/lesson', name: 'lessonDemo', component: () => import('@/views/LessonDemo.vue') },
     { path: '/courses/:courseNum', name: 'course', component: Placeholder, props: { title: 'Course lessons' } },
     { path: '/lessons/:id', name: 'lesson', component: Placeholder, props: { title: 'Lesson / problem runner' } },
     { path: '/lessons/:id/problems', name: 'lessonProblems', component: Placeholder, props: { title: 'All problems' } },
