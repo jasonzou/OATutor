@@ -150,6 +150,11 @@ function unlockHint(i: number, type?: string) {
   if (hintsFinished.value[i] !== 1)
     hintsFinished.value[i] = type !== 'scaffold' ? 1 : 0.5
 }
+
+// A scaffold hint answered correctly marks it fully finished (1).
+function onScaffoldSubmit(i: number, correct: boolean) {
+  if (correct) hintsFinished.value[i] = 1
+}
 </script>
 
 <template>
@@ -171,6 +176,7 @@ function unlockHint(i: number, type?: string) {
       :hint-status="hintsFinished"
       :unlock-first-hint="unlockFirstHint"
       @unlock-hint="unlockHint"
+      @submit-hint="onScaffoldSubmit"
     />
 
     <ProblemInput

@@ -11,6 +11,7 @@ declare module 'vue' {
     BuildTimeIndicator: typeof import('./components/BuildTimeIndicator.vue')['default']
     GridInput: typeof import('./components/problem-input/GridInput.vue')['default']
     HintSystem: typeof import('./components/problem-layout/HintSystem.vue')['default']
+    HintTextbox: typeof import('./components/problem-layout/HintTextbox.vue')['default']
     MathField: typeof import('./components/MathField.vue')['default']
     MathText: typeof import('./components/MathText.vue')['default']
     MatrixInput: typeof import('./components/problem-input/MatrixInput.vue')['default']

@@ -5,6 +5,7 @@
 // here and ported next, alongside the ProblemCard core loop.
 import { chooseVariables } from '@core/platform-logic/variabilize'
 import RenderText from '@/components/RenderText.vue'
+import HintTextbox from './HintTextbox.vue'
 import { useTranslation } from '@/shared/composables/useTranslation'
 
 interface Hint {
@@ -26,12 +27,16 @@ const props = defineProps<{
   unlockFirstHint?: boolean
   isIncorrect?: boolean
 }>()
-const emit = defineEmits<{ unlockHint: [index: number, type?: string] }>()
+const emit = defineEmits<{
+  unlockHint: [index: number, type?: string]
+  'submit-hint': [index: number, isCorrect: boolean]
+}>()
 
 const { t } = useTranslation()
 const hintLabel = (i: number) => `${t('hintsystem.hint') ?? 'Hint '}${i + 1}`
 
 const expanded = ref<string[]>([])
+const showSubhints = reactive<Record<number, boolean>>({})
 // auto-open the first hint when requested (matches the React behavior)
 if ((props.unlockFirstHint || props.isIncorrect) && props.hints.length) {
   expanded.value = ['0']
@@ -89,9 +94,29 @@ function varsFor(hint: Hint) {
             :problem-i-d="problemID"
             :variabilization="varsFor(hint)"
           />
-          <NAlert v-if="hint.type === 'scaffold'" type="info" :show-icon="false" class="mt-2">
-            Scaffold answer input + sub-hints are ported in the next step.
-          </NAlert>
+          <!-- scaffold: answer box -->
+          <HintTextbox
+            v-if="hint.type === 'scaffold'"
+            :hint="hint"
+            :index="index"
+            :hint-num="i"
+            :hint-vars="{ ...(stepVars ?? {}), ...(hint.variabilization ?? {}) }"
+            :seed="seed"
+            @submit-hint="(_p: string, c: boolean) => emit('submit-hint', i, c)"
+            @toggle-hints="showSubhints[i] = !showSubhints[i]"
+          />
+          <!-- sub-hints (revealed by the scaffold toggle) -->
+          <div
+            v-if="showSubhints[i] && hint.subHints?.length"
+            class="ml-4 mt-2 border-l border-gray-300 pl-3 dark:border-gray-600"
+          >
+            <div v-for="(sh, si) in hint.subHints" :key="si" class="mb-2">
+              <div class="font-medium">
+                {{ sh.title }}
+              </div>
+              <RenderText :text="sh.text" :problem-i-d="problemID" :variabilization="varsFor(hint)" />
+            </div>
+          </div>
         </div>
       </NCollapseItem>
     </NCollapse>
