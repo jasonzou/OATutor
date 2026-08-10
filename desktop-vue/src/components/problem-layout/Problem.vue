@@ -139,7 +139,7 @@ function nextProblem() {
 <template>
   <div
     :class="showTextbook && canShowTextbook ? 'max-w-[min(1400px,100%)]' : 'max-w-3xl'"
-    class="mx-auto pl-2 pr-4 py-4"
+    class="mx-auto pl-1 pr-2 py-4"
   >
     <!-- mastery bar (hidden when the parent — e.g. Platform — owns the display) -->
     <div v-if="showMastery" class="mb-3">
@@ -154,7 +154,7 @@ function nextProblem() {
       />
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[minmax(min(640px,100%),1fr)_520px] gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(min(600px,100%),1fr)_600px] gap-6 items-start">
       <!-- question column -->
       <div class="min-w-0 overflow-x-auto">
         <!-- textbook toggle -->

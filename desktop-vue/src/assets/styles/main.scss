@@ -39,5 +39,15 @@ body {
   }
   ol, ul { padding-left: 1.4em; margin: 0.55em 0; }
   mjx-container { vertical-align: middle; }
+
+  // Worked examples are authored as wide \begin{matrix} solution tables that
+  // can exceed the panel width; keep display math contained and scrollable
+  // instead of letting it overflow/clip the card.
+  mjx-container[display="true"] {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
 }
 
