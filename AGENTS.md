@@ -119,7 +119,10 @@ for `npm test`**; dev and build no longer use them.
   "Open section X.Y in OpenStax".
 - For offline reading, `src/tools/renderOpenstaxSections.js` pre-renders every
   section to `public/textbook/<book>/<section>.html` via `src/tools/cnxToHtml.js`
-  (CNX XML -> HTML; MathML -> `$$` LaTeX so the existing MathJax renders it).
+  (CNX XML -> HTML; MathML -> `$$` LaTeX so the existing MathJax renders it;
+  CALS tables -> `<table class="cnx-table">` with caption/thead/tbody — styled
+  by `.cnx-content` rules in `src/index.css` and, for the Vue app, in
+  `desktop-vue/src/assets/styles/main.scss`; keep the two in sync).
   The in-app reader is `src/components/TextbookReader.js` at route
   `/textbook/:bookId/:section` (linked from lesson cards as "Read offline").
 - Images in pre-rendered sections point at raw GitHub `media/` (online only);

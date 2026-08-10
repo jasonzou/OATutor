@@ -74,3 +74,35 @@ blockquote:before {
     overflow-x: auto;
     overflow-y: hidden;
 }
+
+/* CNX tables (rendered as <table class="cnx-table"> by cnxToHtml.js).
+   display:block + overflow-x keeps wide tables scrollable instead of clipped.
+   Keep in sync with desktop-vue/src/assets/styles/main.scss (.cnx-content). */
+.cnx-content table {
+    border-collapse: collapse;
+    margin: 0.9em 0;
+    max-width: 100%;
+    display: block;
+    overflow-x: auto;
+}
+.cnx-content caption {
+    caption-side: top;
+    text-align: left;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 0.35em;
+}
+.cnx-content th,
+.cnx-content td {
+    border: 1px solid #d0d7de;
+    padding: 0.35em 0.7em;
+    vertical-align: top;
+    text-align: left;
+}
+.cnx-content thead th {
+    background: #f0f4f9;
+    font-weight: 600;
+}
+.cnx-content tbody tr:nth-child(even) {
+    background: #fafbfc;
+}

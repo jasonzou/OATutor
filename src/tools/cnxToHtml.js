@@ -240,6 +240,8 @@ function serialize(node, ctx) {
         case "document":
             return `<section class="cnx-section">${kids()}</section>`;
         case "title":
+            // Inside a CALS table, <title> is the table's title -> caption.
+            if (ctx.inTable) return `<caption>${kids()}</caption>`;
             return `<h${ctx.h}>${kids()}</h${ctx.h}>`;
         case "content":
             return kids();
@@ -297,6 +299,41 @@ function serialize(node, ctx) {
                 ? `<a class="cnx-link" data-module="${doc}">${text}</a>`
                 : text;
         }
+        /* --- CNX (CALS) tables -> HTML tables --- */
+        case "table": {
+            const prev = ctx.inTable;
+            ctx.inTable = true;
+            const out = `<table class="cnx-table">${kids()}</table>`;
+            ctx.inTable = prev;
+            return out;
+        }
+        case "name":
+            // <name> is the table title in CALS; render it as a caption.
+            return ctx.inTable ? `<caption>${kids()}</caption>` : kids();
+        case "tgroup":
+            return kids();
+        case "colspec":
+            return ""; // column widths/names not needed for rendering
+        case "thead": {
+            const prev = ctx.inThead;
+            ctx.inThead = true;
+            const out = `<thead>${kids()}</thead>`;
+            ctx.inThead = prev;
+            return out;
+        }
+        case "tbody":
+            return `<tbody>${kids()}</tbody>`;
+        case "tfoot":
+            return `<tfoot>${kids()}</tfoot>`;
+        case "row":
+            return `<tr>${kids()}</tr>`;
+        case "entry": {
+            const tag = ctx.inThead ? "th" : "td";
+            const span = node.attrs.morerows
+                ? ` rowspan="${Number(node.attrs.morerows) + 1}"`
+                : "";
+            return `<${tag}${span}>${kids()}</${tag}>`;
+        }
         default:
             // MathML and anything else: pass through with prefix stripped,
             // or (in latex mode) serialize MathML to LaTeX.
@@ -319,6 +356,8 @@ function cnxToHtml(src, opts = {}) {
         h: 2,
         mediaBase: opts.mediaBase || "",
         mathFormat: opts.mathFormat === "latex" ? "latex" : "mathml",
+        inTable: false,
+        inThead: false,
     };
     const tree = parseXml(src);
     const body = tree.children.map((c) => serialize(c, ctx)).join("\n").trim();
