@@ -5,38 +5,11 @@
 // omitted (offline); answerMade is forwarded for later BKT/mastery wiring.
 import { chooseVariables } from '@core/platform-logic/variabilize'
 import { checkAnswer } from '@core/platform-logic/checkAnswer'
+import type { Hint, Step } from '@/shared/types'
 import RenderText from '@/components/RenderText.vue'
 import ProblemInput from '@/components/problem-input/ProblemInput.vue'
 import HintSystem from '@/components/problem-layout/HintSystem.vue'
 import { useTranslation } from '@/shared/composables/useTranslation'
-
-interface Hint {
-  id: string
-  title?: string
-  text?: string
-  type?: string
-  dependencies?: number[]
-  variabilization?: Record<string, unknown>
-  subHints?: Hint[]
-  hintAnswer?: string[]
-}
-interface Step {
-  id: string
-  stepTitle?: string
-  stepBody?: string
-  stepAnswer?: string[]
-  answerType?: string
-  problemType?: string
-  precision?: number
-  answerValidator?: string
-  variabilization?: Record<string, unknown>
-  knowledgeComponents?: string[]
-  hints?: Record<string, Hint[]>
-  choices?: string[]
-  numRows?: number
-  numCols?: number
-  units?: string
-}
 
 const props = withDefaults(
   defineProps<{
@@ -87,8 +60,8 @@ function buildHints() {
   if (props.giveStuBottomHint) {
     src.push({
       id: `${props.step.id}-h${src.length + 1}`,
-      title: (t('hintsystem.answer') ?? 'Answer') as string,
-      text: `${t('hintsystem.answerIs') ?? 'The answer is '}${props.step.stepAnswer?.[0] ?? ''}`,
+      title: t('hintsystem.answer'),
+      text: `${t('hintsystem.answerIs')}${props.step.stepAnswer?.[0] ?? ''}`,
       type: 'bottomOut',
       dependencies: Array.from({ length: src.length }, (_, i) => i),
     })
@@ -198,12 +171,23 @@ function onScaffoldSubmit(i: number, correct: boolean) {
       <NButton
         type="primary"
         :disabled="(!allowRetry && problemAttempted)"
+        :title="!allowRetry && problemAttempted ? 'Answer already submitted' : undefined"
         @click="submit"
       >
-        {{ t('problem.Submit') ?? 'Submit' }}
+        {{ t('problem.Submit') }}
       </NButton>
-      <span v-if="isCorrect === true" class="i-lucide-circle-check text-xl text-green-600" />
-      <span v-else-if="isCorrect === false" class="i-lucide-circle-x text-xl text-red-600" />
+      <span
+        v-if="isCorrect === true"
+        class="i-lucide-circle-check text-xl text-green-600"
+        role="img"
+        aria-label="Correct"
+      />
+      <span
+        v-else-if="isCorrect === false"
+        class="i-lucide-circle-x text-xl text-red-600"
+        role="img"
+        aria-label="Incorrect"
+      />
     </div>
   </NCard>
 </template>

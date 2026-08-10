@@ -26,5 +26,10 @@ watch(() => [props.math, props.display], typeset)
 </script>
 
 <template>
-  <span v-if="typeof math === 'string' && math.length" ref="el">{{ delimited() }}</span>
+  <!-- display math needs a block wrapper; inline math stays in a span -->
+  <component
+    :is="display ? 'div' : 'span'"
+    v-if="typeof math === 'string' && math.length"
+    ref="el"
+  >{{ delimited() }}</component>
 </template>

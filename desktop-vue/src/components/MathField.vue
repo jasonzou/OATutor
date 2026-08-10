@@ -9,6 +9,7 @@ const props = defineProps<{
   modelValue?: string
   disabled?: boolean
   placeholder?: string
+  ariaLabel?: string
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
@@ -46,6 +47,16 @@ watch(
   <math-field
     ref="mf"
     :disabled="disabled"
-    style="display: block; width: 100%; border: 1px solid var(--n-border-color, #ccc); border-radius: 4px; padding: 4px 8px"
+    :aria-label="ariaLabel ?? placeholder"
   />
 </template>
+
+<style scoped>
+math-field {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--n-border-color, #ccc);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+</style>

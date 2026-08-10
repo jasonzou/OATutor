@@ -14,45 +14,23 @@ import {
   textbookSectionUrl,
 } from '@core/util/textbookLink'
 import { openExternalOnClick } from '@core/util/openExternal'
+import { BOOK_TITLES } from '@/shared/config'
+import type { BKTParams, LessonPlan, PoolProblem } from '@/shared/types'
 import RenderText from '@/components/RenderText.vue'
 import ProblemCard from '@/components/problem-layout/ProblemCard.vue'
 import SectionContent from '@/components/SectionContent.vue'
 
-interface BKTParam { probMastery: number; probTransit: number; probSlip: number; probGuess: number }
-interface Lesson {
-  courseName?: string
-  learningObjectives?: Record<string, number>
-  giveStuFeedback?: boolean | null
-  giveStuHints?: boolean | null
-  keepMCOrder?: boolean | null
-  giveHintOnIncorrect?: boolean | null
-  keyboardType?: string | null
-  doMasteryUpdate?: boolean | null
-  unlockFirstHint?: boolean | null
-  giveStuBottomHint?: boolean | null
-  allowDynamicHint?: boolean
-}
-interface Step { id: string; knowledgeComponents?: string[]; [k: string]: unknown }
-interface Problem {
-  id: string
-  title?: string
-  body?: string
-  variabilization?: Record<string, unknown>
-  courseName?: string
-  lesson?: string
-  steps: Step[]
-}
-
 const props = withDefaults(
   defineProps<{
-    problem: Problem
-    lesson: Lesson
-    bktParams: Record<string, BKTParam>
+    problem: PoolProblem
+    lesson: LessonPlan
+    bktParams: Record<string, BKTParams>
     seed?: number
     debug?: boolean
     autoScroll?: boolean
+    showMastery?: boolean
   }>(),
-  { seed: 0, debug: false, autoScroll: true },
+  { seed: 0, debug: false, autoScroll: true, showMastery: true },
 )
 const emit = defineEmits<{
   'display-mastery': [score: number]
@@ -83,10 +61,11 @@ const showTextbook = ref(false)
 
 const variab = computed(() => chooseVariables(props.problem.variabilization ?? {}, props.seed))
 const sectionUrl = computed(() =>
-  textbookSectionUrl(props.problem.courseName ?? '', sectionNumberOfProblem(props.problem as any)),
+  textbookSectionUrl(props.problem.courseName ?? '', sectionNumberOfProblem(props.problem)),
 )
-const sectionNumber = computed(() => sectionNumberOfProblem(props.problem as any))
+const sectionNumber = computed(() => sectionNumberOfProblem(props.problem))
 const bookId = computed(() => bookIdForCourse(props.problem.courseName ?? ''))
+const bookTitle = computed(() => (bookId.value && BOOK_TITLES[bookId.value]) || bookId.value || '')
 const canShowTextbook = computed(() => !!bookId.value && !!sectionNumber.value)
 const sectionMeta = computed(() =>
   bookId.value && sectionNumber.value ? textbookSectionByBook(bookId.value, sectionNumber.value) : null,
@@ -159,8 +138,8 @@ function nextProblem() {
 
 <template>
   <div class="max-w-3xl mx-auto p-4">
-    <!-- mastery bar -->
-    <div class="mb-3">
+    <!-- mastery bar (hidden when the parent — e.g. Platform — owns the display) -->
+    <div v-if="showMastery" class="mb-3">
       <div class="text-xs text-gray-500 mb-1">
         Mastery: {{ Math.round(mastery * 100) }}%
       </div>
@@ -182,7 +161,7 @@ function nextProblem() {
 
     <!-- textbook toggle -->
     <div v-if="canShowTextbook" class="flex-y-center justify-between mb-3">
-      <span class="text-sm text-gray-600">Textbook · Calculus Volume 1</span>
+      <span class="text-sm text-gray-600">Textbook · {{ bookTitle }}</span>
       <NButton size="small" quaternary @click="showTextbook = !showTextbook">
         {{ showTextbook ? 'Hide' : 'Show' }} section content
       </NButton>

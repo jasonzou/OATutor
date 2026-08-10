@@ -5,12 +5,22 @@
 import { openExternal } from '@core/util/openExternal'
 import { sectionNumberOfLesson, textbookSectionUrl } from '@core/util/textbookLink'
 import { useTranslation } from '@/shared/composables/useTranslation'
-import { courseNames, defaultCourseName, lessonsForCourse } from '@/shared/lessons'
+import { courseLanguage, courseNames, defaultCourseName, lessonsForCourse } from '@/shared/lessons'
 
-const { t } = useTranslation()
+const { t, locale } = useTranslation()
 const router = useRouter()
 
 const selectedCourse = ref(defaultCourseName())
+
+// Selecting a course enters it for locale purposes (mirrors the React app's
+// Platform): the course's declared language becomes the session language.
+watch(
+  selectedCourse,
+  (name) => {
+    if (name) locale.enterCourse(name, courseLanguage(name))
+  },
+  { immediate: true },
+)
 const courseOptions = computed(() =>
   courseNames().map(name => ({ label: name, value: name })),
 )

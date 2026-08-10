@@ -14,6 +14,7 @@ interface RawCourse {
   courseName: string
   courseOER?: string
   courseLicense?: string
+  language?: string
   lessons: RawLesson[]
 }
 
@@ -49,4 +50,9 @@ export function defaultCourseName(): string {
     visibleCourses[0]?.courseName ??
     ''
   )
+}
+
+/** Session language declared by a course (coursePlans.json `language` field). */
+export function courseLanguage(courseName: string): string | undefined {
+  return visibleCourses.find((p) => p.courseName === courseName)?.language
 }
