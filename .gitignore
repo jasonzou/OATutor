@@ -37,3 +37,6 @@ pnpm-lock.yaml
 
 /generated
 **/node_modules/*
+
+# Vue rewrite build output
+/desktop-vue/dist

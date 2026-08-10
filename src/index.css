@@ -64,3 +64,13 @@ blockquote:before {
     top: 4.5em !important;
     right: 0.5em !important;
 }
+
+/* Pre-rendered OpenStax sections (TextbookReader). Worked examples are authored
+   as wide \begin{matrix} solution tables that can exceed the container; keep
+   display math contained and horizontally scrollable instead of clipping. */
+.cnx-content mjx-container[display="true"] {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}

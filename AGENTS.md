@@ -200,7 +200,8 @@ for `npm test`**; dev and build no longer use them.
   aliased: `@` -> `desktop-vue/src`, `@generated` -> repo `generated/`.
 - Commands (run from `desktop-vue/`, needs Node >=18 / pnpm 11):
   `pnpm install` · `pnpm dev` (port 3002) · `pnpm build` (vue-tsc + vite) ·
-  `pnpm typecheck`.
+  `pnpm typecheck` · `pnpm test` (vitest; `vitest.config.ts` mirrors the aliases
+  + auto-import transform; pure-logic unit tests only, no component tests yet).
 - pnpm 11 gates build scripts; `pnpm-workspace.yaml` sets
   `dangerouslyAllowAllBuilds: true` (esbuild/@parcel/watcher/vue-demi) so
   `pnpm install` doesn't fail on ignored builds.
@@ -212,12 +213,12 @@ for `npm test`**; dev and build no longer use them.
   and leaf components (`BrandLogoNav`, `BuildTimeIndicator`, `Spacer`).
   `src/views/LessonSelection.vue` is the first real ported screen. Remaining
   (ProblemCard, Problem, Platform, inputs, mathlive) port per the conversion plan.
-- Phase 2 (inputs): `ProblemInput.vue` + `MathField.vue` port the mathlive
-  `<math-field>` (Vue compiler treats it as a custom element) and the TextBox
-  variants (math / string / short-essay); `MultipleChoice`/`GridInput`/
-  `MatrixInput` are stubbed pending the next step. `views/InputDemo.vue` at
-  `/demo/input` verifies the math input end-to-end. `mathlive` is large (~850 KB)
-  and is code-split to that route.
+- Phase 2 (inputs, complete): `ProblemInput.vue` + `MathField.vue` port the
+  mathlive `<math-field>` (Vue compiler treats it as a custom element) and the
+  TextBox variants (math / string / short-essay); `MultipleChoice`/`GridInput`/
+  `MatrixInput` are ported (GridInput uses mathlive cells; MatrixInput adds
+  bracket decorations). `views/InputDemo.vue` at `/demo/input` verifies the math
+  input end-to-end. `mathlive` is large (~850 KB) and is code-split to that route.
 - Phase 3 (core loop, complete): content rendering ported — `RenderText.vue`
   parses the OATutor markdown dialect (`$$latex$$` / `##media##` / `\n` /
   fill-in-blanks / dynamic text / variabilization) and `MathText.vue` typesets
@@ -229,9 +230,12 @@ for `npm test`**; dev and build no longer use them.
   (`/lessons/:id`) is the full BKT-driven lesson runner (lowest-mastery next-
   problem heuristic, graduation/exhaustion). `contentPool.js` glob is now
   file-relative (`../../generated/...`) so the ~32 MB pool loads from either app
-  as a separate on-demand chunk. Demos: `/demo/problem`, `/demo/lesson`. Remaining
-  (lower priority): scaffold `HintTextbox`/`SubHintSystem`, port secondary screens
+  as a separate on-demand chunk. Demos: `/demo/problem`, `/demo/lesson`.
+  `HintTextbox` is ported and `SubHintSystem` is unified into `HintSystem.vue`
+  (recursive — hints within hints at any depth). Shared content/BKT types live in
+  `src/shared/types.ts`. Remaining (lower priority): port secondary screens
   (`TextbookReader`, `ViewAllProblems`, `Posts`), then point Tauri at this build.
+  Note: keep `typescript` on 5.x — vue-tsc 3 does not support TS 7 (no `lib/tsc`).
 
 ## Where things live (entrypoints)
 
