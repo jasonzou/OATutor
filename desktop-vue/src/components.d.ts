@@ -21,6 +21,7 @@ declare module 'vue' {
     NCard: typeof import('naive-ui')['NCard']
     NCollapse: typeof import('naive-ui')['NCollapse']
     NCollapseItem: typeof import('naive-ui')['NCollapseItem']
+    NCollapseTransition: typeof import('naive-ui')['NCollapseTransition']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NDialogProvider: typeof import('naive-ui')['NDialogProvider']
     NInput: typeof import('naive-ui')['NInput']
@@ -41,6 +42,7 @@ declare module 'vue' {
     RenderText: typeof import('./components/RenderText.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SectionContent: typeof import('./components/SectionContent.vue')['default']
     Spacer: typeof import('./components/Spacer.vue')['default']
   }
 }

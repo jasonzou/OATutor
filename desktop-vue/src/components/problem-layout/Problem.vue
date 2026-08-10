@@ -7,10 +7,16 @@
 import update from '@core/models/BKT/BKT-brain.js'
 import { cleanArray } from '@core/util/cleanObject'
 import { chooseVariables } from '@core/platform-logic/variabilize'
-import { sectionNumberOfProblem, textbookSectionUrl } from '@core/util/textbookLink'
+import {
+  bookIdForCourse,
+  sectionNumberOfProblem,
+  textbookSectionByBook,
+  textbookSectionUrl,
+} from '@core/util/textbookLink'
 import { openExternalOnClick } from '@core/util/openExternal'
 import RenderText from '@/components/RenderText.vue'
 import ProblemCard from '@/components/problem-layout/ProblemCard.vue'
+import SectionContent from '@/components/SectionContent.vue'
 
 interface BKTParam { probMastery: number; probTransit: number; probSlip: number; probGuess: number }
 interface Lesson {
@@ -73,10 +79,22 @@ const firstAttempts = reactive<Record<number, boolean>>({})
 const problemFinished = ref(false)
 const mastery = ref(0)
 
+const showTextbook = ref(false)
+
 const variab = computed(() => chooseVariables(props.problem.variabilization ?? {}, props.seed))
 const sectionUrl = computed(() =>
   textbookSectionUrl(props.problem.courseName ?? '', sectionNumberOfProblem(props.problem as any)),
 )
+const sectionNumber = computed(() => sectionNumberOfProblem(props.problem as any))
+const bookId = computed(() => bookIdForCourse(props.problem.courseName ?? ''))
+const canShowTextbook = computed(() => !!bookId.value && !!sectionNumber.value)
+const sectionMeta = computed(() =>
+  bookId.value && sectionNumber.value ? textbookSectionByBook(bookId.value, sectionNumber.value) : null,
+)
+const sectionTitle = computed(() => {
+  if (!sectionNumber.value) return ''
+  return sectionMeta.value ? `${sectionNumber.value} ${sectionMeta.value.title}` : `Section ${sectionNumber.value}`
+})
 
 function answerMade(cardIndex: number, kcArray: string[] | undefined, isCorrect: boolean) {
   if (stepStates[cardIndex] === true) return
@@ -161,6 +179,41 @@ function nextProblem() {
     <div v-if="problem.body" class="mb-4">
       <RenderText :text="problem.body" :problem-i-d="problem.id" :variabilization="variab" />
     </div>
+
+    <!-- textbook toggle -->
+    <div v-if="canShowTextbook" class="flex-y-center justify-between mb-3">
+      <span class="text-sm text-gray-600">Textbook · Calculus Volume 1</span>
+      <NButton size="small" quaternary @click="showTextbook = !showTextbook">
+        {{ showTextbook ? 'Hide' : 'Show' }} section content
+      </NButton>
+    </div>
+    <NCollapseTransition>
+      <NCard v-if="showTextbook && canShowTextbook" size="small" class="mb-4" :bordered="true">
+        <template #header>
+          <div class="flex-y-center justify-between w-full">
+            <span class="font-bold text-sm">{{ sectionTitle }}</span>
+            <div class="flex-y-center gap-3">
+              <a
+                v-if="sectionMeta?.url"
+                :href="sectionMeta.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sm text-[#1976D2]"
+                @click="openExternalOnClick(sectionMeta.url)"
+              >
+                Open in OpenStax ↗
+              </a>
+              <NButton size="tiny" quaternary @click="showTextbook = false">
+                Close
+              </NButton>
+            </div>
+          </div>
+        </template>
+        <div v-if="bookId && sectionNumber" class="max-h-[60vh] overflow-y-auto">
+          <SectionContent :book-id="bookId" :section="sectionNumber" />
+        </div>
+      </NCard>
+    </NCollapseTransition>
 
     <!-- steps -->
     <div

@@ -4,14 +4,14 @@ import { CONTENT_SOURCE } from "@common/global-config";
 // the main JS bundle stays small. The pool is fetched once at app bootstrap
 // (see src/index.js) and cached; components read it synchronously via
 // getContentPool() afterwards.
-const _poolLoaders = import.meta.glob("/generated/processed-content-pool/*.json");
+const _poolLoaders = import.meta.glob("../../generated/processed-content-pool/*.json");
 
 let _pool = null;
 
 export async function loadContentPool() {
     if (_pool) return _pool;
     const loader =
-        _poolLoaders[`/generated/processed-content-pool/${CONTENT_SOURCE}.json`];
+        _poolLoaders[`../../generated/processed-content-pool/${CONTENT_SOURCE}.json`];
     if (!loader) {
         console.error(`Content pool for source "${CONTENT_SOURCE}" not found.`);
         _pool = [];

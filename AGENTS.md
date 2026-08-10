@@ -204,10 +204,34 @@ for `npm test`**; dev and build no longer use them.
 - pnpm 11 gates build scripts; `pnpm-workspace.yaml` sets
   `dangerouslyAllowAllBuilds: true` (esbuild/@parcel/watcher/vue-demi) so
   `pnpm install` doesn't fail on ignored builds.
-- Status (Phase 0): scaffolded; `src/views/LessonSelection.vue` ported as the
-  first screen (Naive UI cards/select + UnoCSS grid + the contextual textbook
-  link via the shared core). Remaining components (ProblemCard, Problem,
-  Platform, inputs, mathlive) port per the conversion plan.
+- Status (Phase 1): scaffolded + infrastructure ported — `shared/store/app.ts`
+  (dark mode + Naive UI theme overrides) and `shared/store/locale.ts` +
+  `shared/composables/useTranslation.ts` (i18n, reusing `@core/locales/*.json`),
+  `layouts/DefaultLayout.vue` shell (brand, build time, locale switch, dark
+  toggle), full router map (not-yet-ported routes → `views/Placeholder.vue`),
+  and leaf components (`BrandLogoNav`, `BuildTimeIndicator`, `Spacer`).
+  `src/views/LessonSelection.vue` is the first real ported screen. Remaining
+  (ProblemCard, Problem, Platform, inputs, mathlive) port per the conversion plan.
+- Phase 2 (inputs): `ProblemInput.vue` + `MathField.vue` port the mathlive
+  `<math-field>` (Vue compiler treats it as a custom element) and the TextBox
+  variants (math / string / short-essay); `MultipleChoice`/`GridInput`/
+  `MatrixInput` are stubbed pending the next step. `views/InputDemo.vue` at
+  `/demo/input` verifies the math input end-to-end. `mathlive` is large (~850 KB)
+  and is code-split to that route.
+- Phase 3 (core loop, complete): content rendering ported — `RenderText.vue`
+  parses the OATutor markdown dialect (`$$latex$$` / `##media##` / `\n` /
+  fill-in-blanks / dynamic text / variabilization) and `MathText.vue` typesets
+  each math span via MathJax (loaded in `index.html`; `publicDir` is the shared
+  repo `../public` for figures + mathjax). `HintSystem.vue` renders the hint
+  accordions (dependency-gated) using RenderText. `ProblemCard.vue` ports the
+  step loop (render -> ProblemInput -> `checkAnswer` -> correctness -> hints);
+  `Problem.vue` runs multi-step BKT (mutating `bktParams` in place); `Platform.vue`
+  (`/lessons/:id`) is the full BKT-driven lesson runner (lowest-mastery next-
+  problem heuristic, graduation/exhaustion). `contentPool.js` glob is now
+  file-relative (`../../generated/...`) so the ~32 MB pool loads from either app
+  as a separate on-demand chunk. Demos: `/demo/problem`, `/demo/lesson`. Remaining
+  (lower priority): scaffold `HintTextbox`/`SubHintSystem`, port secondary screens
+  (`TextbookReader`, `ViewAllProblems`, `Posts`), then point Tauri at this build.
 
 ## Where things live (entrypoints)
 
