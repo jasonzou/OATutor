@@ -5,22 +5,10 @@
 // HintSystem (so "hints within hints" — and their own scaffold boxes — work at
 // any depth). This unifies the React HintSystem + SubHintSystem.
 import { chooseVariables } from '@core/platform-logic/variabilize'
+import type { Hint } from '@/shared/types'
 import RenderText from '@/components/RenderText.vue'
 import HintTextbox from './HintTextbox.vue'
 import { useTranslation } from '@/shared/composables/useTranslation'
-
-interface Hint {
-  id: string
-  title?: string
-  text?: string
-  type?: string
-  dependencies?: number[]
-  variabilization?: Record<string, unknown>
-  subHints?: Hint[]
-  hintAnswer?: string[]
-  answerType?: string
-  problemType?: string
-}
 
 const props = withDefaults(
   defineProps<{
@@ -41,7 +29,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const hintLabel = (i: number) => `${t('hintsystem.hint') ?? 'Hint '}${i + 1}`
+const hintLabel = (i: number) => `${t('hintsystem.hint')}${i + 1}`
 
 // finished-state for these hints; defaults to all-0 if the parent didn't supply.
 const status = computed(() =>

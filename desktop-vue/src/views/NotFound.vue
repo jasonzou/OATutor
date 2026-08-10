@@ -7,8 +7,11 @@
     <h2 class="text-2xl font-bold">
       404
     </h2>
-    <p class="text-gray-500">
+    <p class="text-gray-500 mb-4">
       Page not found.
     </p>
+    <NButton type="primary" @click="$router.push('/')">
+      Back to lessons
+    </NButton>
   </div>
 </template>

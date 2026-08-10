@@ -3,10 +3,13 @@
 //   $$latex$$      -> MathText (MathJax)
 //   ##media##      -> figure image (/static/images/figures/<src>/<problemID>/<file>)
 //   \n             -> line break
-//   ___ (3+)       -> fill-in-the-blank box
+//   ___ (3+)       -> fill-in-the-blank box (even inside $$...$$, matching the
+//                    React renderText — a $$___$$ span is a blank, not math)
 //   %{key}         -> context meta variable
 //   %X%            -> dynamicText expansion
-// plus \neq -> ≠, ** -> ^, and variabilization.
+// plus \neq -> ≠, ** -> ^, and variabilization. Note the ** -> ^ rewrite runs on
+// the whole string (parity with the React app), so a literal "**" in plain text
+// is not possible in this dialect.
 import { variabilize } from '@core/platform-logic/variabilize'
 import { CONTENT_SOURCE } from '@common/global-config'
 import { dynamicText } from '@/shared/config'

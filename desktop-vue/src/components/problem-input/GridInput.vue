@@ -41,12 +41,14 @@ function setCell(r: number, c: number, v: string) {
   gridState.value[r][c] = v
   emitGrid()
 }
-function clearCells() {
-  if (Number.isNaN(numRows.value) || numRows.value! <= 0 || Number.isNaN(numCols.value) || numCols.value! <= 0) {
+// (Re)builds an empty grid from numRows × numCols. Used by the dimensions form,
+// the dimensions popover, and "clear all cells" (clearing = rebuilding empty).
+function regenerateGrid() {
+  if (Number.isNaN(numRows.value) || numRows.value <= 0 || Number.isNaN(numCols.value) || numCols.value <= 0) {
     message?.error('Matrix must be at least 1 x 1')
     return
   }
-  gridState.value = genEmpty(numRows.value!, numCols.value!)
+  gridState.value = genEmpty(numRows.value, numCols.value)
   emitGrid()
 }
 </script>
@@ -54,7 +56,7 @@ function clearCells() {
 <template>
   <div class="flex flex-col items-center py-2 text-center">
     <!-- dimensions entry -->
-    <form v-if="showInitialSlide" @submit.prevent="clearCells">
+    <form v-if="showInitialSlide" @submit.prevent="regenerateGrid">
       <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
         <div class="font-bold text-lg">
           Enter in matrix dimensions.
@@ -86,7 +88,7 @@ function clearCells() {
             <NInputNumber v-model:value="numRows" size="small" placeholder="# Rows" />
             <span>×</span>
             <NInputNumber v-model:value="numCols" size="small" placeholder="# Cols" />
-            <NButton size="small" type="primary" @click="clearCells">
+            <NButton size="small" type="primary" @click="regenerateGrid">
               Done
             </NButton>
           </div>
@@ -116,7 +118,7 @@ function clearCells() {
         <NButton
           size="small"
           :class="revealClear ? 'opacity-100' : 'opacity-0'"
-          @click="clearCells"
+          @click="regenerateGrid"
         >
           clear all cells
         </NButton>

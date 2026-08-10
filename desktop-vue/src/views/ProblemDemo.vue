@@ -3,21 +3,22 @@
 // renders the first step of a real problem. Route: /demo/problem
 import ProblemCard from '@/components/problem-layout/ProblemCard.vue'
 import { getContentPool, loadContentPool } from '@core/util/contentPool'
+import type { PoolProblem } from '@/shared/types'
 
 const ready = ref(false)
-const problem = ref<any>(null)
+const problem = ref<PoolProblem | null>(null)
 const step = computed(() => problem.value?.steps?.[0])
 
 onMounted(async () => {
   await loadContentPool()
-  const pool = getContentPool() as any[]
+  const pool = getContentPool() as PoolProblem[]
   problem.value
     = pool.find(
-      (p: any) =>
+      (p) =>
         p.courseName === 'OpenStax: Calculus Volume 1'
         && p.steps?.length
         && p.steps[0]?.hints?.DefaultPathway?.length,
-    ) ?? pool.find((p: any) => p.steps?.length)
+    ) ?? pool.find((p) => p.steps?.length) ?? null
   ready.value = true
 })
 
@@ -26,7 +27,7 @@ function answerMade(_i: number, _kcs: string[] | undefined, _correct: boolean) {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto p-6">
+  <div class="max-w-[min(1400px,100%)] mx-auto p-6">
     <h2 class="text-xl font-bold mb-1">
       ProblemCard (Vue) — live content
     </h2>
@@ -41,6 +42,7 @@ function answerMade(_i: number, _kcs: string[] | undefined, _correct: boolean) {
         {{ problem.title }} · {{ problem.id }}
       </div>
       <ProblemCard
+        v-if="step"
         :step="step"
         :problem-i-d="problem.id"
         :index="0"

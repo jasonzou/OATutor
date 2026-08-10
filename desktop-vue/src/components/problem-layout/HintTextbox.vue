@@ -4,22 +4,9 @@
 // runs checkAnswer, correctness feedback, and a toggle to reveal sub-hints.
 import { chooseVariables } from '@core/platform-logic/variabilize'
 import { checkAnswer } from '@core/platform-logic/checkAnswer'
+import type { Hint } from '@/shared/types'
 import ProblemInput from '@/components/problem-input/ProblemInput.vue'
 import { useTranslation } from '@/shared/composables/useTranslation'
-
-interface Hint {
-  hintAnswer?: string[]
-  answerType?: string
-  precision?: number
-  answerValidator?: string
-  problemType?: string
-  choices?: string[]
-  numRows?: number
-  numCols?: number
-  text?: string
-  subHints?: unknown[]
-  variabilization?: Record<string, unknown>
-}
 
 const props = withDefaults(
   defineProps<{
@@ -94,12 +81,23 @@ function submit() {
         type="primary"
         size="small"
         :disabled="(!allowRetry && isCorrect != null)"
+        :title="!allowRetry && isCorrect != null ? 'Answer already submitted' : undefined"
         @click="submit"
       >
-        {{ t('problem.Submit') ?? 'Submit' }}
+        {{ t('problem.Submit') }}
       </NButton>
-      <span v-if="isCorrect === true" class="i-lucide-circle-check text-green-600" />
-      <span v-else-if="isCorrect === false" class="i-lucide-circle-x text-red-600" />
+      <span
+        v-if="isCorrect === true"
+        class="i-lucide-circle-check text-green-600"
+        role="img"
+        aria-label="Correct"
+      />
+      <span
+        v-else-if="isCorrect === false"
+        class="i-lucide-circle-x text-red-600"
+        role="img"
+        aria-label="Incorrect"
+      />
     </div>
   </div>
 </template>

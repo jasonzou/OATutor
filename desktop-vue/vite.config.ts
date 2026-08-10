@@ -41,6 +41,8 @@ export default defineConfig({
   // Share the repo's public/ (mathjax, textbook, static figures) so the Vue app
   // renders content identically to the React app.
   publicDir: fileURLToPath(new URL('../public', import.meta.url)),
+  // Modern Sass API — silences the legacy-js-api deprecation warning.
+  css: { preprocessorOptions: { scss: { api: 'modern' } } },
   build: { outDir: 'dist' },
   server: { port: 3002 },
 })

@@ -37,7 +37,7 @@ const seed = ref(Date.now())
 
 const lesson = computed<LessonPlan | null>(() => {
   const id = route.params.id as string
-  const plans = coursePlans as Array<{ courseName: string; language?: string; lessons?: LessonPlan[] }>
+  const plans = coursePlans as unknown as Array<{ courseName: string; language?: string; lessons?: LessonPlan[] }>
   for (const c of plans) {
     const l = (c.lessons || []).find((x) => x.id === id)
     if (l) return { ...l, courseName: c.courseName, language: c.language }
@@ -150,7 +150,7 @@ function exit() {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto p-4">
+  <div class="max-w-[min(1400px,100%)] mx-auto p-4">
     <div v-if="lesson" class="flex-y-center justify-between mb-2">
       <div>
         <h1 class="text-xl font-bold m-0">

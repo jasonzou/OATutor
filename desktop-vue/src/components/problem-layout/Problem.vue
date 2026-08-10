@@ -137,7 +137,10 @@ function nextProblem() {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto p-4">
+  <div
+    :class="showTextbook && canShowTextbook ? 'max-w-[min(1400px,100%)]' : 'max-w-3xl'"
+    class="mx-auto pl-2 pr-4 py-4"
+  >
     <!-- mastery bar (hidden when the parent — e.g. Platform — owns the display) -->
     <div v-if="showMastery" class="mb-3">
       <div class="text-xs text-gray-500 mb-1">
@@ -151,87 +154,105 @@ function nextProblem() {
       />
     </div>
 
-    <!-- problem header -->
-    <h1 v-if="problem.title" class="text-2xl font-bold mb-1">
-      <RenderText :text="problem.title" :problem-i-d="problem.id" :variabilization="variab" />
-    </h1>
-    <div v-if="problem.body" class="mb-4">
-      <RenderText :text="problem.body" :problem-i-d="problem.id" :variabilization="variab" />
-    </div>
-
-    <!-- textbook toggle -->
-    <div v-if="canShowTextbook" class="flex-y-center justify-between mb-3">
-      <span class="text-sm text-gray-600">Textbook · {{ bookTitle }}</span>
-      <NButton size="small" quaternary @click="showTextbook = !showTextbook">
-        {{ showTextbook ? 'Hide' : 'Show' }} section content
-      </NButton>
-    </div>
-    <NCollapseTransition>
-      <NCard v-if="showTextbook && canShowTextbook" size="small" class="mb-4" :bordered="true">
-        <template #header>
-          <div class="flex-y-center justify-between w-full">
-            <span class="font-bold text-sm">{{ sectionTitle }}</span>
-            <div class="flex-y-center gap-3">
-              <a
-                v-if="sectionMeta?.url"
-                :href="sectionMeta.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-sm text-[#1976D2]"
-                @click="openExternalOnClick(sectionMeta.url)"
-              >
-                Open in OpenStax ↗
-              </a>
-              <NButton size="tiny" quaternary @click="showTextbook = false">
-                Close
-              </NButton>
-            </div>
-          </div>
-        </template>
-        <div v-if="bookId && sectionNumber" class="max-h-[60vh] overflow-y-auto">
-          <SectionContent :book-id="bookId" :section="sectionNumber" />
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(min(640px,100%),1fr)_520px] gap-6 items-start">
+      <!-- question column -->
+      <div class="min-w-0 overflow-x-auto">
+        <!-- textbook toggle -->
+        <div v-if="canShowTextbook" class="flex-y-center justify-between mb-4">
+          <span class="text-sm text-gray-600">Textbook · {{ bookTitle }}</span>
+          <NButton
+            type="primary"
+            :secondary="showTextbook"
+            size="large"
+            @click="showTextbook = !showTextbook"
+          >
+            <template #icon>
+              <span class="i-lucide-book-open" />
+            </template>
+            {{ showTextbook ? 'Hide' : 'Show' }} section content
+          </NButton>
         </div>
-      </NCard>
-    </NCollapseTransition>
 
-    <!-- steps -->
-    <div
-      v-for="(step, i) in problem.steps"
-      :id="`step-${i}`"
-      :key="step.id"
-      class="mb-4 scroll-mt-20"
-    >
-      <ProblemCard
-        :step="step"
-        :problem-i-d="problem.id"
-        :index="i"
-        :seed="seed"
-        :problem-vars="problem.variabilization"
-        :give-stu-feedback="f.giveStuFeedback"
-        :give-stu-hints="f.giveStuHints"
-        :give-stu-bottom-hint="f.giveStuBottomHint"
-        :unlock-first-hint="f.unlockFirstHint"
-        :keep-m-c-order="f.keepMCOrder"
-        :keyboard-type="f.keyboardType"
-        :answer-made="answerMade"
-      />
-    </div>
+        <!-- problem header -->
+        <h1 v-if="problem.title" class="text-2xl font-bold mb-1">
+          <RenderText :text="problem.title" :problem-i-d="problem.id" :variabilization="variab" />
+        </h1>
+        <div v-if="problem.body" class="mb-4">
+          <RenderText :text="problem.body" :problem-i-d="problem.id" :variabilization="variab" />
+        </div>
 
-    <!-- footer: next problem + textbook link -->
-    <div class="flex items-center justify-between mt-2">
-      <a
-        v-if="sectionUrl"
-        :href="sectionUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-sm text-[#1976D2]"
-        @click="openExternalOnClick(sectionUrl)"
+        <!-- steps -->
+        <div
+          v-for="(step, i) in problem.steps"
+          :id="`step-${i}`"
+          :key="step.id"
+          class="mb-4 scroll-mt-20"
+        >
+          <ProblemCard
+            :step="step"
+            :problem-i-d="problem.id"
+            :index="i"
+            :seed="seed"
+            :problem-vars="problem.variabilization"
+            :give-stu-feedback="f.giveStuFeedback"
+            :give-stu-hints="f.giveStuHints"
+            :give-stu-bottom-hint="f.giveStuBottomHint"
+            :unlock-first-hint="f.unlockFirstHint"
+            :keep-m-c-order="f.keepMCOrder"
+            :keyboard-type="f.keyboardType"
+            :answer-made="answerMade"
+          />
+        </div>
+
+        <!-- footer: next problem + textbook link -->
+        <div class="flex items-center justify-between mt-2">
+          <a
+            v-if="sectionUrl"
+            :href="sectionUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-[#1976D2]"
+            @click="openExternalOnClick(sectionUrl)"
+          >
+            📖 Open section {{ sectionNumberOfProblem(problem) }} in OpenStax
+          </a>
+          <NButton v-if="problemFinished" type="primary" @click="nextProblem">
+            Next problem
+          </NButton>
+        </div>
+      </div>
+
+      <!-- textbook panel: side by side with the question -->
+      <aside
+        v-if="showTextbook && canShowTextbook"
+        class="lg:sticky lg:top-4"
       >
-        📖 Open section {{ sectionNumberOfProblem(problem) }} in OpenStax
-      </a>
-      <NButton v-if="problemFinished" type="primary" @click="nextProblem">
-        Next problem
-      </NButton>
+        <NCard size="small" :bordered="true">
+          <template #header>
+            <div class="flex-y-center justify-between w-full">
+              <span class="font-bold text-sm">{{ sectionTitle }}</span>
+              <div class="flex-y-center gap-3">
+                <a
+                  v-if="sectionMeta?.url"
+                  :href="sectionMeta.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm text-[#1976D2]"
+                  @click="openExternalOnClick(sectionMeta.url)"
+                >
+                  Open in OpenStax ↗
+                </a>
+                <NButton size="tiny" quaternary @click="showTextbook = false">
+                  Close
+                </NButton>
+              </div>
+            </div>
+          </template>
+          <div v-if="bookId && sectionNumber" class="pr-1 lg:max-h-[70vh] lg:overflow-y-auto">
+            <SectionContent :book-id="bookId" :section="sectionNumber" />
+          </div>
+        </NCard>
+      </aside>
     </div>
   </div>
 </template>

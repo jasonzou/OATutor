@@ -6,31 +6,34 @@ import { loadContentPool, getContentPool } from '@core/util/contentPool'
 import bktParamsJson from '@core/content-sources/oatutor/bkt-params/defaultBKTParams.json'
 import skillModel from '@core/content-sources/oatutor/skillModel.json'
 import { cleanArray } from '@core/util/cleanObject'
+import type { BKTParams, LessonPlan, PoolProblem } from '@/shared/types'
 import Problem from '@/components/problem-layout/Problem.vue'
 
 const ready = ref(false)
-const problems = ref<any[]>([])
+const problems = ref<PoolProblem[]>([])
 const idx = ref(0)
 // Held by the parent so BKT mastery persists across problems (mutated in place).
-const bkt = reactive(JSON.parse(JSON.stringify(bktParamsJson)))
+const bkt = reactive<Record<string, BKTParams>>(
+  JSON.parse(JSON.stringify(bktParamsJson)) as Record<string, BKTParams>,
+)
 
 const problem = computed(() => problems.value[idx.value])
 
 const skillModelMap = skillModel as Record<string, string[]>
 
-function injectKCs(p: any) {
-  p.steps?.forEach((s: any) => {
+function injectKCs(p: PoolProblem) {
+  p.steps?.forEach((s) => {
     if (!s.knowledgeComponents)
       s.knowledgeComponents = cleanArray(skillModelMap[s.id] || [])
   })
   return p
 }
-const lesson = computed(() => {
+const lesson = computed<LessonPlan>(() => {
   const p = problem.value
   if (!p) return {}
   const kcs = new Set<string>()
-  p.steps?.forEach((s: any) =>
-    (s.knowledgeComponents || []).forEach((k: string) => kcs.add(k)),
+  p.steps?.forEach((s) =>
+    (s.knowledgeComponents || []).forEach((k) => kcs.add(k)),
   )
   const learningObjectives: Record<string, number> = {}
   kcs.forEach((k) => {
@@ -47,7 +50,7 @@ const lesson = computed(() => {
 
 onMounted(async () => {
   await loadContentPool()
-  const pool = (getContentPool() as any[]).filter(
+  const pool = (getContentPool() as PoolProblem[]).filter(
     p => p.courseName === 'OpenStax: Calculus Volume 1' && p.steps?.length,
   )
   pool.forEach(injectKCs)

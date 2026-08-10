@@ -1,25 +1,15 @@
 <script setup lang="ts">
-// ProblemInput (partial port, Phase 2 "mathlive-first"). Handles the TextBox
-// variants — math (MathField/mathlive), plain string (NInput), short essay
-// (textarea). MultipleChoice / GridInput / MatrixInput are stubbed here and
-// ported in the next step. Auto-detects MatrixInput from a \begin{matrix} answer.
+// ProblemInput. Handles the TextBox variants — math (MathField/mathlive), plain
+// string (NInput), short essay (textarea) — plus MultipleChoice, GridInput, and
+// MatrixInput. Auto-detects MatrixInput from a \begin{...matrix} answer.
 import MathField from '@/components/MathField.vue'
 import MultipleChoice from './MultipleChoice.vue'
 import GridInput from './GridInput.vue'
 import MatrixInput from './MatrixInput.vue'
 import { parseMatrixTex } from '@core/util/parseMatrixTex'
 import { shuffleArray } from '@core/util/shuffleArray'
+import type { AnswerTarget } from '@/shared/types'
 
-interface Step {
-  problemType?: string
-  answerType?: string
-  stepAnswer?: string[]
-  hintAnswer?: string[]
-  choices?: string[]
-  units?: string
-  numRows?: number
-  numCols?: number
-}
 interface InputState {
   inputVal?: string
   isCorrect?: boolean | null
@@ -28,7 +18,7 @@ interface InputState {
 
 const props = withDefaults(
   defineProps<{
-    step: Step
+    step: AnswerTarget
     modelValue?: string
     state?: InputState
     index?: number
@@ -46,7 +36,8 @@ const emit = defineEmits<{
   keypress: [event: KeyboardEvent]
 }>()
 
-const MATRIX_RE = /\\begin{[a-zA-Z]?matrix}/
+// Matches \begin{matrix}, \begin{pmatrix}, \begin{bmatrix}, \begin{smallmatrix}, …
+const MATRIX_RE = /\\begin{[a-zA-Z]*matrix}/
 
 const resolvedType = computed(() => {
   const s = props.step
@@ -74,10 +65,15 @@ const isEssay = computed(
   () => resolvedType.value === 'TextBox' && props.step.answerType === 'short-essay',
 )
 
+// keepMCOrder reverses rather than preserving source order — intentional parity
+// with the React ProblemInput (`[...choices].reverse()`); without it, choices are
+// shuffled with the problem seed.
 const mcChoices = computed(() => {
   const c = props.step.choices ?? []
   return props.keepMCOrder ? [...c].reverse() : shuffleArray(c, props.seed)
 })
+// Debug mode pre-fills the correct answer (mirrors the React app's
+// use_expanded_view && debug default); normal users always start empty.
 const matrixDefault = computed<string[][] | undefined>(() =>
   props.debug ? parseMatrixTex(correctAnswer.value)?.[0] : undefined,
 )
@@ -91,13 +87,18 @@ function onKey(e: KeyboardEvent) {
 
 onMounted(() => {
   // Best-effort, mirrors the React app.
+  applyKeyboardLayout(props.keyboardType)
+})
+watch(() => props.keyboardType, applyKeyboardLayout)
+
+function applyKeyboardLayout(layout: string) {
   try {
     ;(window as unknown as { mathVirtualKeyboard: { layouts: unknown[] } })
-      .mathVirtualKeyboard.layouts = [props.keyboardType]
+      .mathVirtualKeyboard.layouts = [layout]
   } catch {
     /* ignore */
   }
-})
+}
 </script>
 
 <template>
@@ -107,6 +108,7 @@ onMounted(() => {
         v-if="isMath"
         :model-value="debug ? correctAnswer : modelValue"
         :disabled="disableInput"
+        :aria-label="`Answer question ${index ?? ''}`"
         @update:model-value="setVal"
       />
 

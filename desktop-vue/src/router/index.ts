@@ -7,6 +7,7 @@ const Placeholder = () => import('@/views/Placeholder.vue')
 
 export const router = createRouter({
   history: createWebHashHistory(),
+  scrollBehavior: () => ({ top: 0 }),
   routes: [
     { path: '/', name: 'home', component: () => import('@/views/LessonSelection.vue') },
     { path: '/demo/input', name: 'inputDemo', component: () => import('@/views/InputDemo.vue') },
