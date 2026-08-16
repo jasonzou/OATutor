@@ -29,8 +29,9 @@ const props = withDefaults(
     debug?: boolean
     autoScroll?: boolean
     showMastery?: boolean
+    browse?: boolean
   }>(),
-  { seed: 0, debug: false, autoScroll: true, showMastery: true },
+  { seed: 0, debug: false, autoScroll: true, showMastery: true, browse: false },
 )
 const emit = defineEmits<{
   'display-mastery': [score: number]
@@ -216,7 +217,7 @@ function nextProblem() {
           >
             📖 Open section {{ sectionNumberOfProblem(problem) }} in OpenStax
           </a>
-          <NButton v-if="problemFinished" type="primary" @click="nextProblem">
+          <NButton v-if="problemFinished && !browse" type="primary" @click="nextProblem">
             Next problem
           </NButton>
         </div>

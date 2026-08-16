@@ -13,12 +13,16 @@ import coursePlans from '@core/content-sources/oatutor/coursePlans.json'
 import { cleanArray } from '@core/util/cleanObject'
 import { MASTERY_THRESHOLD } from '@/shared/config'
 import { useLocaleStore } from '@/shared/store/locale'
+import { applyMasterySnapshot, snapshotMastery, useProgressStore } from '@/shared/store/progress'
 import type { BKTParams, LessonPlan, PoolProblem } from '@/shared/types'
 import Problem from '@/components/problem-layout/Problem.vue'
 
 const route = useRoute()
 const router = useRouter()
 const locale = useLocaleStore()
+const progress = useProgressStore()
+// Pristine defaults to diff mastery against (never mutated).
+const bktDefaults = bktParamsJson as Record<string, { probMastery: number }>
 
 // skillModel.json is generated content: step id -> KC ids.
 const skillModelMap = skillModel as Record<string, string[]>
@@ -131,6 +135,12 @@ onMounted(async () => {
     }
   }
   lessonProblems.value = mine
+
+  // Restore durable progress: completed problems + BKT mastery snapshot.
+  const saved = progress.getLesson(l.id!)
+  saved.completed.forEach(id => completed.add(id))
+  applyMasterySnapshot(bkt, saved.mastery)
+
   nextProblem()
 })
 
@@ -140,6 +150,8 @@ onUnmounted(() => {
 
 function onComplete() {
   if (currProblem.value) completed.add(currProblem.value.id)
+  // Persist progress (completed set + mastery diff vs defaults).
+  progress.saveLesson(lesson.value!.id!, [...completed], snapshotMastery(bktDefaults, bkt))
   seed.value = Date.now()
   nextProblem()
 }

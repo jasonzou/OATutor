@@ -56,8 +56,20 @@ function openSection(courseName: string, lessonName: string) {
         v-for="lesson in lessons"
         :key="lesson.id"
         hoverable
-        class="rounded-lg"
+        class="rounded-lg relative"
       >
+        <!-- top-right: browse all problems -->
+        <NButton
+          quaternary
+          circle
+          size="tiny"
+          class="!absolute top-2 right-2"
+          aria-label="View all problems for this lesson"
+          @click.stop="router.push(`/lessons/${lesson.id}/problems`)"
+        >
+          <span class="i-lucide-library text-16px" />
+        </NButton>
+
         <div class="text-lg font-semibold">
           {{ lesson.name.replace(/##/g, '') }}
         </div>

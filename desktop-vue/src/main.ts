@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import { router } from './router'
 
 import App from './App.vue'
+import { hydrateFromDesktop } from '@core/util/desktopStorage'
 
 import '@unocss/reset/tailwind.css'
 import '@/assets/styles/main.scss'
@@ -10,6 +11,11 @@ import 'virtual:uno.css'
 
 async function bootstrap() {
   const app = createApp(App)
+
+  // Pull durable state (userID, lesson progress) from the Tauri store on
+  // desktop; no-op in the browser (localStorage is the source there).
+  await hydrateFromDesktop(['oatutor-user_id', 'oatutor-progress'])
+
   app.use(createPinia())
   app.use(router)
 
