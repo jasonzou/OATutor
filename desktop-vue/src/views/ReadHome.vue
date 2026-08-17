@@ -4,12 +4,13 @@
 import { availableBooks, chapters } from '@/shared/textbook'
 
 const route = useRoute()
+const router = useRouter()
 const book = ref(route.params.book as string || availableBooks()[0]?.id || '')
 const options = availableBooks().map(b => ({ label: b.id, value: b.id }))
 const chapterList = computed(() => chapters(book.value))
 
 function go(section: string) {
-  useRouter().push(`/read/${book.value}/${section}`)
+  router.push(`/read/${book.value}/${section}`)
 }
 </script>
 

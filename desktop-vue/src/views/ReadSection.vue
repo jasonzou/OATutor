@@ -33,11 +33,22 @@ watchEffect(async () => {
       `${import.meta.env.BASE_URL}textbook/${dir.value}/${section.value}.html`,
     )
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    html.value = await r.text()
+    html.value = rewriteMediaPaths(await r.text(), dir.value)
   } catch (e: any) {
     error.value = e?.message ?? String(e)
   }
 })
+
+// The staged fragments reference figures as "media/..." relative to their own
+// directory (public/textbook/<dir>/), but they're injected into the app document
+// at the site root. Rewrite to the absolute public path so images actually load.
+function rewriteMediaPaths(html: string, dir: string): string {
+  const prefix = `${import.meta.env.BASE_URL}textbook/${dir}/media/`
+  return html
+    .replace(/src="media\//g, `src="${prefix}`)
+    .replace(/src='media\//g, `src='${prefix}`)
+    .replace(/url\(media\//g, `url(${prefix}`)
+}
 
 // Typeset after the fragment is injected.
 watchEffect(async () => {
