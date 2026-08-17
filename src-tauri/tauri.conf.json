@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "identifier": "io.oatutor.desktop",
   "build": {
-    "frontendDist": "../build",
-    "devUrl": "http://localhost:3001",
-    "beforeDevCommand": "VITE_DESKTOP=true npm run dev",
-    "beforeBuildCommand": "VITE_DESKTOP=true npm run build"
+    "frontendDist": "../desktop-vue/dist",
+    "devUrl": "http://localhost:3002",
+    "beforeDevCommand": "node src/tools/preprocessProblemPool.js && cd desktop-vue && pnpm dev",
+    "beforeBuildCommand": "node src/tools/preprocessProblemPool.js && cd desktop-vue && pnpm build"
   },
   "app": {
     "windows": [

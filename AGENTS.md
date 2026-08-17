@@ -64,12 +64,15 @@ for `npm test`**; dev and build no longer use them.
 ## Desktop (Tauri)
 
 - The app also builds as a **Tauri v2** desktop binary (`src-tauri/`). Rust is
-  compiled via cargo; the webview loads the Vite `build/` output.
-- `npm run tauri dev` — run the desktop shell against the Vite dev server
-  (`beforeDevCommand` = `npm run dev`, `devUrl` = `http://localhost:3001`).
+  compiled via cargo; the webview loads the **Vue** build (`desktop-vue/dist` —
+  `tauri.conf.json` points `frontendDist` there; the React `build/` remains for
+  the web/gh-pages deploys only). Tauri **embeds the frontend into the binary**
+  (no loose files in the .deb).
+- `npm run tauri dev` — run the desktop shell against the Vue dev server
+  (`beforeDevCommand` runs the content preprocessor then `pnpm dev` on **3002**).
 - `npm run tauri build` — production desktop build. `beforeBuildCommand` runs the
-  Vite build. Outputs `src-tauri/target/release/app` plus Linux bundles
-  (`deb`/`rpm`). Targets are scoped to `["deb","rpm"]` because **AppImage
+  preprocessor then `cd desktop-vue && pnpm build` (vue-tsc + vite). Outputs
+  `src-tauri/target/release/app` plus Linux bundles (`deb`/`rpm`). Targets are scoped to `["deb","rpm"]` because **AppImage
   (`linuxdeploy`) fails in headless/CI sandboxes**; re-add `"appimage"` only on a
   machine with FUSE.
 - Linux builds require system libs: `webkit2gtk-4.1`, `gtk+-3.0`, `librsvg2`,
@@ -238,6 +241,41 @@ for `npm test`**; dev and build no longer use them.
   (recursive — hints within hints at any depth). Shared content/BKT types live in
   `src/shared/types.ts`. Remaining (lower priority): port secondary screens
   (`TextbookReader`, `ViewAllProblems`, `Posts`), then point Tauri at this build.
+- Two-mode shell (Phase A): `layouts/DefaultLayout.vue` is now a Naive UI sidebar
+  (`n-layout-sider` + `n-menu`) with **Question** (`/`), **Reading** (`/read`,
+  chapter-grouped section browser from `@core/config/openstaxLinks.json` via
+  `shared/textbook.ts`), and **Settings** (`/settings`, dark + language).
+  Sider collapse persists via `@vueuse` `useStorage`.
+- Reading mode (Phase B, done): `views/ReadSection.vue` at `/read/:book/:section`
+  fetches the staged official fragment (`shared/textbook.ts` `contentDirFor`
+  maps book -> `public/textbook/calc1/`), injects it (`.cnx-content` styling for
+  figures/abstracts/exercises/tables), and typesets with **MathJax
+  `tex-mml-chtml.js`** (swapped in `index.html` — handles both problem `$$` TeX
+  and textbook MathML). Prev/next section nav + "Open in OpenStax" included.
+- Durable progress: `shared/store/progress.ts` (Pinia) persists a **userID** and
+  per-lesson `{completed problem ids, BKT mastery snapshot}` to localStorage
+  (`oatutor-progress`) and mirrors writes to the Tauri store on desktop
+  (`hydrateFromDesktop` at bootstrap in `main.ts`). Mastery snapshots store only
+  KCs whose `probMastery` differs from `defaultBKTParams` (diff via
+  `snapshotMastery`/`applyMasterySnapshot`); `Platform.vue` restores on mount and
+  saves on each completed problem. Settings has a reset-all action
+  (`useDialog` confirm).
+- `views/ViewAllProblems.vue` (`/lessons/:id/problems`, linked from the
+  lesson-card library icon): browse every problem in a lesson with interactive
+  inputs but an **isolated, throwaway BKT copy** (`Problem` `browse` prop hides
+  the next-problem button) so browsing never affects saved progress.
+- Official textbook HTML: `cnxml/scripts/build_html.py` (in-repo) converts CNXML
+  via the **official archived `openstax/cnx-transforms`** (needs two tiny py3.12+
+  patches: `SafeConfigParser`->`ConfigParser` and `readfp`->`read_file` in its
+  `versioneer.py`, plus `pip install lxml`). Output is native **MathML** (MathJax
+  needs `tex-mml-chtml.js`, staged in `public/mathjax/`). Regenerate the reading
+  content with:
+  `build_html.py` -> `node src/tools/stageTextbook.js <html-out> <osbooks-repo>`,
+  which stages section-named fragments to `public/textbook/calc1/` **plus all
+  referenced figures to `calc1/media/`** (rewrites `../../media/` -> `media/`;
+  currently 45 sections + 672 images, ~69 MB — fully offline). The older
+  custom-rendered `public/textbook/calculus-volume-1/` set remains for the React
+  reader only.
   Note: keep `typescript` on 5.x — vue-tsc 3 does not support TS 7 (no `lib/tsc`).
 
 ## Where things live (entrypoints)

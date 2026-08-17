@@ -1,0 +1,18 @@
+# cnxml-pipeline — Python dependencies
+
+# HTML conversion — OFFICIAL OpenStax transform (archived May 2023, final stable)
+#   git clone https://github.com/openstax/cnx-transforms.git
+#   pip install -e cnx-transforms        # or --transform-dir cnx-transforms
+#   (provides cnxml_to_html / cnxml_to_full_html; deps: lxml, etc.)
+
+# RAG corpus (via kalendar/openstax-convert, stdlib only — no pip needed)
+
+# Retrieval demo / evaluation
+numpy
+rank-bm25                  # BM25 sparse retrieval
+sentence-transformers      # dense embeddings (all-MiniLM-L6-v2)
+
+# Install:
+#   pip install numpy rank-bm25 sentence-transformers
+#   git clone https://github.com/openstax/cnx-transforms.git && pip install -e cnx-transforms
+#   (openstax-convert runs from the cloned repo, stdlib-only)
