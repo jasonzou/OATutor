@@ -59,6 +59,18 @@ const problemFinished = ref(false)
 const mastery = ref(0)
 
 const showTextbook = ref(false)
+const fullscreenTextbook = ref(false)
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') fullscreenTextbook.value = false
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+
+function closeTextbook() {
+  fullscreenTextbook.value = false
+  showTextbook.value = false
+}
 
 const variab = computed(() => chooseVariables(props.problem.variabilization ?? {}, props.seed))
 const sectionUrl = computed(() =>
@@ -226,9 +238,16 @@ function nextProblem() {
       <!-- textbook panel: side by side with the question -->
       <aside
         v-if="showTextbook && canShowTextbook"
-        class="lg:sticky lg:top-4"
+        :class="fullscreenTextbook
+          ? 'fixed inset-0 z-[1500] p-4 flex flex-col'
+          : 'lg:sticky lg:top-4'"
       >
-        <NCard size="small" :bordered="true">
+        <NCard
+          size="small"
+          :bordered="true"
+          :class="fullscreenTextbook ? 'flex-1 min-h-0 flex flex-col' : ''"
+          :content-style="fullscreenTextbook ? 'flex: 1 1 0%; min-height: 0; overflow: auto;' : undefined"
+        >
           <template #header>
             <div class="flex-y-center justify-between w-full">
               <span class="font-bold text-sm">{{ sectionTitle }}</span>
@@ -243,13 +262,26 @@ function nextProblem() {
                 >
                   Open in OpenStax ↗
                 </a>
-                <NButton size="tiny" quaternary @click="showTextbook = false">
+                <NButton
+                  size="tiny"
+                  quaternary
+                  :title="fullscreenTextbook ? 'Exit fullscreen (Esc)' : 'Fullscreen'"
+                  @click="fullscreenTextbook = !fullscreenTextbook"
+                >
+                  <template #icon>
+                    <span :class="fullscreenTextbook ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'" />
+                  </template>
+                </NButton>
+                <NButton size="tiny" quaternary @click="closeTextbook">
                   Close
                 </NButton>
               </div>
             </div>
           </template>
-          <div v-if="bookId && sectionNumber" class="pr-1 lg:max-h-[70vh] lg:overflow-y-auto">
+          <div
+            v-if="bookId && sectionNumber"
+            :class="fullscreenTextbook ? 'mx-auto w-full max-w-4xl' : 'pr-1 lg:max-h-[70vh] lg:overflow-y-auto'"
+          >
             <SectionContent :book-id="bookId" :section="sectionNumber" />
           </div>
         </NCard>

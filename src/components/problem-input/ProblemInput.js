@@ -6,6 +6,7 @@ import GridInput from "./GridInput";
 import MatrixInput from "./MatrixInput";
 import { renderText } from "../../platform-logic/renderText";
 import clsx from "clsx";
+import "mathlive/static.css";
 import "mathlive";
 import './ProblemInput.css'
 import { shuffleArray } from "../../util/shuffleArray";

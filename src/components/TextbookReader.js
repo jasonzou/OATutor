@@ -42,6 +42,25 @@ export default function TextbookReader() {
         else run();
     }, [state.html]);
 
+    // Math inside a closed <details class="cnx-solution"> may not have been
+    // typeset at load; re-typeset when it opens (no-op if already rendered).
+    // `toggle` does not bubble, so listen in the capture phase.
+    useEffect(() => {
+        const onToggle = (e) => {
+            const t = e.target;
+            if (
+                t?.closest?.(".cnx-content") &&
+                t.open &&
+                t.textContent?.includes("$$") &&
+                window.MathJax?.typesetPromise
+            ) {
+                window.MathJax.typesetPromise([t]).catch(() => {});
+            }
+        };
+        document.addEventListener("toggle", onToggle, true);
+        return () => document.removeEventListener("toggle", onToggle, true);
+    }, []);
+
     const meta = textbookSectionByBook(bookId, section);
     const title = meta ? `${section} ${meta.title}` : `Section ${section}`;
 

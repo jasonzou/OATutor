@@ -106,3 +106,100 @@ blockquote:before {
 .cnx-content tbody tr:nth-child(even) {
     background: #fafbfc;
 }
+
+/* OpenStax-style note boxes (<aside class="cnx-note"> from cnxToHtml.js):
+   gray panel with darker text. Mirrors OpenStax's
+   [data-type="note"] > section rules. Keep in sync with
+   desktop-vue/src/assets/styles/main.scss (.cnx-content). */
+.cnx-content .cnx-note {
+    margin: 0.9em 0;
+    padding: 0.35em 1.2rem 0.9em;
+    background: #ededed;
+    color: #424242;
+    overflow-x: auto;
+    border-radius: 2px;
+}
+/* Section headings: bold + black, sized 24pt (h1) down to 12pt (h6).
+   Keep in sync with desktop-vue/src/assets/styles/main.scss (.cnx-content). */
+.cnx-content h1 { font-size: 24pt; }
+.cnx-content h2 { font-size: 20pt; }
+.cnx-content h3 { font-size: 17pt; }
+.cnx-content h4 { font-size: 15pt; }
+.cnx-content h5 { font-size: 13pt; }
+.cnx-content h6 { font-size: 12pt; }
+.cnx-content h1,
+.cnx-content h2,
+.cnx-content h3,
+.cnx-content h4,
+.cnx-content h5,
+.cnx-content h6 {
+    font-weight: bold;
+    color: #000;
+}
+/* Note titles: underline separating title from body */
+.cnx-content .cnx-note h1,
+.cnx-content .cnx-note h2,
+.cnx-content .cnx-note h3,
+.cnx-content .cnx-note h4,
+.cnx-content .cnx-note h5,
+.cnx-content .cnx-note h6 {
+    padding-bottom: 0.2em;
+    border-bottom: 1px solid currentColor;
+}
+/* Referenced equations carry a "(N)" tag (right-aligned, print-style) */
+.cnx-content .equation {
+    position: relative;
+}
+.cnx-content .equation .equation-number {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    font-size: 0.85em;
+}
+/* Worked examples / problems: blue accent card */
+.cnx-content .cnx-example,
+.cnx-content .cnx-problem {
+    margin: 0.8em 0;
+    padding: 0.6em 0.9em;
+    border-left: 3px solid #1976d2;
+    background: #f7f9fc;
+    border-radius: 2px;
+}
+/* Exercises: gray panel like notes (XSL: .exercise in cnx-styles) */
+.cnx-content .cnx-exercise {
+    margin: 0.9em 0;
+    padding: 0.35em 1.2rem 0.9em;
+    background: #ededed;
+    color: #424242;
+    overflow-x: auto;
+    border-radius: 2px;
+}
+/* Solutions: hidden by default, toggled via the <summary> button */
+.cnx-content details.cnx-solution {
+    margin: 0.6em 0;
+}
+.cnx-content details.cnx-solution > summary {
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.2em 0;
+}
+.cnx-content details.cnx-solution[open] > summary {
+    padding-bottom: 0.2em;
+    margin-bottom: 0.4em;
+    border-bottom: 1px solid currentColor;
+}
+/* Lists: explicit markers (keeps in sync with the Vue app, which must undo
+   the UnoCSS preflight reset) */
+.cnx-content ol { list-style: decimal; }
+.cnx-content ul { list-style: disc; }
+.cnx-content ol,
+.cnx-content ul {
+    padding-left: 1.4em;
+    margin: 0.55em 0;
+}
+.cnx-content li {
+    margin: 0.25em 0;
+}

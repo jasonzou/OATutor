@@ -40,6 +40,9 @@ pnpm-lock.yaml
 
 # Vue rewrite build output
 /desktop-vue/dist
+/desktop-vue/node_modules/*
+/desktop-vue/node_modules
 
 # cnxml-pipeline: cloned converters + build output (regenerate, don't commit)
 /cnxml/work
+

@@ -19,6 +19,40 @@ const path = require("path");
 
 /* ---------- minimal XML tokenizer -> tree ---------- */
 
+// Decode the XML predefined + numeric entities so attribute values and text
+// nodes hold real characters; esc() re-encodes them on output. `&amp;` must be
+// decoded last so e.g. source "&amp;lt;" stays the literal text "&lt;".
+function decodeEntities(s) {
+    return s
+        .replace(/&#x([0-9a-fA-F]+);/g, (_, h) =>
+            String.fromCodePoint(parseInt(h, 16))
+        )
+        .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&amp;/g, "&");
+}
+
+// Index of the '>' closing the tag that starts at src[start] === '<',
+// honoring quoted attribute values (a raw '>' is legal inside them —
+// OpenStax alt text contains e.g. "x=1 for x>2").
+function tagEnd(src, start) {
+    let quote = null;
+    for (let i = start + 1; i < src.length; i++) {
+        const ch = src[i];
+        if (quote) {
+            if (ch === quote) quote = null;
+        } else if (ch === '"' || ch === "'") {
+            quote = ch;
+        } else if (ch === ">") {
+            return i;
+        }
+    }
+    return -1;
+}
+
 function parseXml(src) {
     // drop declarations, comments, and the cnx-specific processing noise
     src = src
@@ -26,17 +60,28 @@ function parseXml(src) {
         .replace(/<!--[\s\S]*?-->/g, "");
     const root = { tag: "#root", attrs: {}, children: [] };
     const stack = [root];
-    let i = 0;
-    const re = /<([^!>][^>]*)>/g;
-    let m;
+    const pushText = (text) => {
+        if (text.trim())
+            stack[stack.length - 1].children.push({
+                tag: "#text",
+                text: decodeEntities(text),
+            });
+    };
     let last = 0;
-    while ((m = re.exec(src))) {
-        if (m.index > last) {
-            const text = src.slice(last, m.index);
-            if (text.trim())
-                stack[stack.length - 1].children.push({ tag: "#text", text });
+    let i = 0;
+    while ((i = src.indexOf("<", i)) !== -1) {
+        const next = src[i + 1];
+        // stray declarations/comments the pre-strip missed: skip, not text
+        if (next === "!" || next === "?") {
+            const end = src.indexOf(">", i);
+            if (end === -1) break;
+            last = i = end + 1;
+            continue;
         }
-        const raw = m[1];
+        const end = tagEnd(src, i);
+        if (end === -1) break;
+        if (i > last) pushText(src.slice(last, i));
+        const raw = src.slice(i + 1, end);
         const selfClose = raw.endsWith("/");
         const body = selfClose ? raw.slice(0, -1).trim() : raw.trim();
         const isClose = body.startsWith("/");
@@ -58,21 +103,32 @@ function parseXml(src) {
             stack[stack.length - 1].children.push(node);
             if (!selfClose) stack.push(node);
         }
-        last = re.lastIndex;
+        last = i = end + 1;
     }
-    if (last < src.length) {
-        const text = src.slice(last);
-        if (text.trim()) stack[0].children.push({ tag: "#text", text });
-    }
+    if (last < src.length) pushText(src.slice(last));
     return root;
 }
 
 function parseAttrs(s) {
     const attrs = {};
-    const re = /([\w:.-]+)\s*=\s*"([^"]*)"/g;
+    const re = /([\w:.-]+)\s*=\s*(["'])(.*?)\2/g;
     let m;
-    while ((m = re.exec(s))) attrs[m[1]] = m[2];
+    while ((m = re.exec(s))) attrs[m[1]] = decodeEntities(m[3]);
     return attrs;
+}
+
+// OpenStax puts the accessible description on <media alt="…"> around the
+// <image>; hoist it onto the image so it becomes the <img alt>.
+function hoistMediaAlt(node) {
+    for (const child of node.children || []) {
+        if (localName(child.tag) === "media" && child.attrs.alt) {
+            for (const img of child.children || []) {
+                if (localName(img.tag) === "image" && !img.attrs.alt)
+                    img.attrs.alt = child.attrs.alt;
+            }
+        }
+        hoistMediaAlt(child);
+    }
 }
 
 /* ---------- MathML -> LaTeX (for the reader; rendered by existing MathJax) ---------- */
@@ -241,7 +297,11 @@ function serialize(node, ctx) {
             return `<section class="cnx-section">${kids()}</section>`;
         case "title":
             // Inside a CALS table, <title> is the table's title -> caption.
-            if (ctx.inTable) return `<caption>${kids()}</caption>`;
+            if (ctx.inTable)
+                return `<caption><strong class="cnx_label">${ctx.inTable}: </strong>${kids()}</caption>`;
+            if (ctx.inExample) {
+                return `<h${ctx.h}><span class="cnx_label">${ctx.inExample}: </span>${kids()}</h${ctx.h}>`;
+            }
             return `<h${ctx.h}>${kids()}</h${ctx.h}>`;
         case "content":
             return kids();
@@ -254,21 +314,37 @@ function serialize(node, ctx) {
         }
         case "term":
             return `<em class="term">${kids()}</em>`;
-        case "equation":
+        case "equation": {
+            const id = node.attrs.id || "";
+            const t = id ? ctx.targets[id] : null;
+            const anchor = id ? ` id="${id}"` : "";
             if (ctx.mathFormat === "latex") {
                 const tex = node.children.map((c) => mathToLatex(c)).join("");
-                return `<div class="equation">$$${tex}$$</div>`;
+                const num = t ? `<span class="equation-number">(${t.n})</span>` : "";
+                return `<div class="equation"${anchor}>$$${tex}$$${num}</div>`;
             }
-            return `<div class="equation">${kids()}</div>`;
-        case "figure":
-            return `<figure${attrStr(node.attrs)}>${kids()}</figure>`;
+            return `<div class="equation"${anchor}>${kids()}</div>`;
+        }
+        case "figure": {
+            const id = node.attrs.id || "";
+            const t = id ? ctx.targets[id] : null;
+            ctx.inFigure = t ? `${t.label} ${t.n}` : null;
+            const out = `<figure${id ? ` id="${id}"` : ""}>${kids()}</figure>`;
+            ctx.inFigure = null;
+            return out;
+        }
         case "caption":
+            if (ctx.inFigure) {
+                return `<figcaption><strong class="cnx_label">${ctx.inFigure}: </strong>${kids()}</figcaption>`;
+            }
             return `<figcaption>${kids()}</figcaption>`;
         case "media":
             return kids();
         case "image": {
             const src = (node.attrs.src || "").replace(/^(\.\.\/)+media\//, "");
-            const alt = node.attrs.alt ? ` alt="${esc(node.attrs.alt)}"` : "";
+            const alt = node.attrs.alt
+                ? ` alt="${esc(node.attrs.alt).replace(/"/g, "&quot;")}"`
+                : "";
             return `<img src="${ctx.mediaBase}${src}"${alt} />`;
         }
         case "list": {
@@ -279,37 +355,61 @@ function serialize(node, ctx) {
         }
         case "item":
             return `<li>${kids()}</li>`;
-        case "note":
-            return `<aside class="cnx-note">${kids()}</aside>`;
-        case "example":
-            return `<div class="cnx-example">${kids()}</div>`;
+        case "note": {
+            const id = node.attrs.id || "";
+            return `<aside class="cnx-note"${id ? ` id="${id}"` : ""}>${kids()}</aside>`;
+        }
+        case "example": {
+            const id = node.attrs.id || "";
+            const t = id ? ctx.targets[id] : null;
+            ctx.inExample = t ? `${t.label} ${t.n}` : null;
+            const out = `<div class="cnx-example"${id ? ` id="${id}"` : ""}>${kids()}</div>`;
+            ctx.inExample = null;
+            return out;
+        }
         case "exercise":
         case "problem":
-        case "solution":
         case "statement":
             return `<div class="cnx-${name}">${kids()}</div>`;
+        // Solutions are hidden by default and toggled open (XSL does this with
+        // display:none + toggleSolution() in /js/exercise.js; <details> gives
+        // the same behavior without inline JS, so it works via v-html/innerHTML
+        // and under strict CSP in the Tauri webview).
+        case "solution":
+            return `<details class="cnx-solution"><summary>Solution</summary><div class="solution-contents">${kids()}</div></details>`;
         case "section":
             ctx.h = Math.min(ctx.h + 1, 6);
             return `<section>${kids()}</section>`;
         case "link": {
-            // cross-link to another module; unresolved in the prototype.
-            const text = kids() || "(see reference)";
+            // In-module cross-reference: resolve to "Figure 3"-style links
+            // (behavior of the official cnxml_render.xsl).
+            const text = kids();
             const doc = node.attrs.document;
+            const targetId = node.attrs["target-id"];
+            const target = targetId ? ctx.targets[targetId] : null;
+            if (target) {
+                const label = text || `${target.label} ${target.n}`;
+                return `<a class="cnx-link" href="#${targetId}">${label}</a>`;
+            }
             return doc
-                ? `<a class="cnx-link" data-module="${doc}">${text}</a>`
-                : text;
+                ? `<a class="cnx-link" data-module="${doc}">${text || "(see reference)"}</a>`
+                : text || "(see reference)";
         }
         /* --- CNX (CALS) tables -> HTML tables --- */
         case "table": {
             const prev = ctx.inTable;
-            ctx.inTable = true;
-            const out = `<table class="cnx-table">${kids()}</table>`;
+            const id = node.attrs.id || "";
+            const t = id ? ctx.targets[id] : null;
+            ctx.inTable = t ? `${t.label} ${t.n}` : true;
+            const out = `<table class="cnx-table"${id ? ` id="${id}"` : ""}>${kids()}</table>`;
             ctx.inTable = prev;
             return out;
         }
         case "name":
             // <name> is the table title in CALS; render it as a caption.
-            return ctx.inTable ? `<caption>${kids()}</caption>` : kids();
+            if (ctx.inTable)
+                return `<caption><strong class="cnx_label">${ctx.inTable}: </strong>${kids()}</caption>`;
+            return kids();
         case "tgroup":
             return kids();
         case "colspec":
@@ -351,6 +451,43 @@ function serialize(node, ctx) {
     }
 }
 
+// Number figures/notes/examples/exercises in document order and map their ids,
+// so <link target-id="…"> can resolve to "Figure 3"-style references (mirrors
+// cnxml_render.xsl behavior).
+const NUMBERED = {
+    figure: "Figure",
+    note: "Note",
+    example: "Example",
+    exercise: "Exercise",
+    table: "Table",
+    equation: "Equation",
+};
+
+function collectReferencedIds(node, set) {
+    if (node.tag === "link" && node.attrs["target-id"])
+        set.add(node.attrs["target-id"]);
+    for (const child of node.children || []) collectReferencedIds(child, set);
+    return set;
+}
+
+function numberTargets(node, counters, targets, referenced) {
+    const name = localName(node.tag);
+    if (NUMBERED[name]) {
+        // Equations: only number the ones a <link> actually points at, so
+        // unreferenced display math carries no "(N)" chrome.
+        const wantNumber =
+            name !== "equation" || (node.attrs.id && referenced.has(node.attrs.id));
+        if (wantNumber) {
+            counters[name] = (counters[name] || 0) + 1;
+            if (node.attrs.id)
+                targets[node.attrs.id] = { label: NUMBERED[name], n: counters[name] };
+        }
+    }
+    for (const child of node.children || [])
+        numberTargets(child, counters, targets, referenced);
+    return targets;
+}
+
 function cnxToHtml(src, opts = {}) {
     const ctx = {
         h: 2,
@@ -358,14 +495,19 @@ function cnxToHtml(src, opts = {}) {
         mathFormat: opts.mathFormat === "latex" ? "latex" : "mathml",
         inTable: false,
         inThead: false,
+        inFigure: null,
+        inExample: null,
+        targets: null,
     };
     const tree = parseXml(src);
+    hoistMediaAlt(tree);
+    ctx.targets = numberTargets(tree, {}, {}, collectReferencedIds(tree, new Set()));
     const body = tree.children.map((c) => serialize(c, ctx)).join("\n").trim();
     const h1 =
         opts.title ||
         (() => {
             const m = src.match(/<title>\s*([\s\S]*?)\s*<\/title>/);
-            return m ? m[1].trim() : "";
+            return m ? decodeEntities(m[1].trim()) : "";
         })();
     return `<section class="cnx-module">\n<h1>${esc(h1)}</h1>\n${body}\n</section>\n`;
 }

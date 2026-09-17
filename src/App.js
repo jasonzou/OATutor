@@ -104,6 +104,8 @@ class App extends React.Component {
         this.state = {
             additionalContext: {},
         };
+        this.mounted = false;
+        this.pendingLocationChange = null;
 
         if (IS_STAGING_OR_DEVELOPMENT) {
             document["oats-meta-site-hash"] = COMMIT_HASH;
@@ -173,16 +175,25 @@ class App extends React.Component {
                     },
                 }));
                 window.history.replaceState({}, document.title, targetLocation);
-            } else if (this.mounted === undefined) {
-                this.state = {
-                    ...this.state,
+            } else {
+                this.pendingLocationChange = {
                     additionalContext,
+                    targetLocation,
                 };
-                window.history.replaceState({}, document.title, targetLocation);
             }
         };
         window.addEventListener("popstate", onLocationChange);
         onLocationChange();
+        if (this.pendingLocationChange) {
+            const { additionalContext, targetLocation } =
+                this.pendingLocationChange;
+            this.pendingLocationChange = null;
+            this.state = {
+                ...this.state,
+                additionalContext,
+            };
+            window.history.replaceState({}, document.title, targetLocation);
+        }
 
         this.browserStorage = new BrowserStorage(this);
 
@@ -191,6 +202,18 @@ class App extends React.Component {
 
     componentDidMount() {
         this.mounted = true;
+        if (this.pendingLocationChange) {
+            const { additionalContext, targetLocation } =
+                this.pendingLocationChange;
+            this.pendingLocationChange = null;
+            this.setState((prev) => ({
+                additionalContext: {
+                    ...prev.additionalContext,
+                    ...additionalContext,
+                },
+            }));
+            window.history.replaceState({}, document.title, targetLocation);
+        }
     }
 
     componentWillUnmount() {

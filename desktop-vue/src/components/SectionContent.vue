@@ -22,8 +22,7 @@ async function load() {
   }
 }
 
-async function typeset() {
-  const node = el.value
+async function typeset(node: HTMLElement) {
   const MJ = (window as unknown as { MathJax?: any }).MathJax
   if (!node || !MJ?.startup?.promise) return
   try {
@@ -35,10 +34,23 @@ async function typeset() {
   }
 }
 
-onMounted(load)
+// Math inside a closed <details class="cnx-solution"> has no layout at load
+// time; re-typeset when it is opened (no-op if already rendered). `toggle`
+// does not bubble, so listen in the capture phase.
+function onToggle(e: Event) {
+  const t = e.target as HTMLElement | null
+  if (t?.closest?.('.cnx-content') && (t as HTMLDetailsElement).open && t.textContent?.includes('$$'))
+    typeset(t)
+}
+
+onMounted(() => {
+  document.addEventListener('toggle', onToggle, true)
+  load()
+})
+onUnmounted(() => document.removeEventListener('toggle', onToggle, true))
 watch(() => [props.bookId, props.section], load)
 watch(html, () => {
-  if (html.value && el.value) nextTick(typeset)
+  if (html.value && el.value) nextTick(() => typeset(el.value!))
 })
 </script>
 
