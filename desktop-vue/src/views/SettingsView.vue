@@ -43,25 +43,27 @@ function confirmReset() {
         <NSwitch :value="app.isDark" @update:value="app.toggleDark()" />
       </div>
 
-      <NDivider style="margin: 4px 0" />
+      <template v-if="langOptions.length > 1">
+        <NDivider style="margin: 4px 0" />
 
-      <div class="flex-y-center justify-between py-2">
-        <div>
-          <div class="font-medium">
-            Language
+        <div class="flex-y-center justify-between py-2">
+          <div>
+            <div class="font-medium">
+              Language
+            </div>
+            <div class="text-xs text-gray-500">
+              Platform language ({{ locale.supportedLanguages.join(', ') }}).
+            </div>
           </div>
-          <div class="text-xs text-gray-500">
-            Platform language ({{ locale.supportedLanguages.join(', ') }}).
-          </div>
+          <NSelect
+            :value="locale.platformLanguage"
+            :options="langOptions"
+            size="small"
+            class="w-28"
+            @update:value="locale.setPlatformLanguage($event)"
+          />
         </div>
-        <NSelect
-          :value="locale.platformLanguage"
-          :options="langOptions"
-          size="small"
-          class="w-28"
-          @update:value="locale.setPlatformLanguage($event)"
-        />
-      </div>
+      </template>
 
       <NDivider style="margin: 4px 0" />
 

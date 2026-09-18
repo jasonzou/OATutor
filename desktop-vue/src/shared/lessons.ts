@@ -27,8 +27,15 @@ export interface Lesson {
 
 const plans = coursePlans as unknown as RawCourse[]
 
-// Hide editor/internal courses (prefixed with "!!") like the React app does.
-const visibleCourses = plans.filter((p) => !p.courseName.startsWith('!!'))
+// Hide editor/internal courses (prefixed with "!!") like the React app does,
+// plus courses explicitly excluded from the picker below.
+const HIDDEN_COURSES: RegExp[] = [/^Data 8/, /^Matematik/]
+
+const visibleCourses = plans.filter(
+  (p) =>
+    !p.courseName.startsWith('!!')
+    && !HIDDEN_COURSES.some((re) => re.test(p.courseName)),
+)
 
 export function courses(): readonly RawCourse[] {
   return visibleCourses

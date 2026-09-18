@@ -36,17 +36,19 @@ describe('useTranslation', () => {
     expect(t('problem.Submit')).toBe('Submit')
   })
 
-  it('translates into the active language after entering a course', () => {
+  it('entering a course with an unsupported language keeps English (EN-only for now)', () => {
     const locale = useLocaleStore()
     locale.enterCourse('Test Course', 'es')
     const { t } = useTranslation()
-    expect(t('problem.Submit')).toBe('Entregar')
+    expect(t('problem.Submit')).toBe('Submit')
   })
 
   it('translates in every supported language (locale files share key sets)', () => {
     const locale = useLocaleStore()
     const { t } = useTranslation()
-    const expectations: Record<string, string> = { en: 'Submit', es: 'Entregar', se: 'Skicka in' }
+    // EN-only for now (see AVAILABLE_LANGUAGES); re-add es/se expectations
+    // when the translated content ships.
+    const expectations: Record<string, string> = { en: 'Submit' }
     for (const [lang, expected] of Object.entries(expectations)) {
       // distinct course per language: the first-entered language is remembered
       // per course for the session (sessionStorage)
@@ -62,7 +64,7 @@ describe('useTranslation', () => {
 
   it('exitCourse restores the platform language', () => {
     const locale = useLocaleStore()
-    locale.enterCourse('Test Course', 'es')
+    locale.enterCourse('Test Course', 'en')
     locale.exitCourse()
     const { t } = useTranslation()
     expect(t('problem.Submit')).toBe('Submit')

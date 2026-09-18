@@ -3,7 +3,8 @@
 import { SITE_NAME } from '@common/global-config'
 import { BUILD_TIMESTAMP, IS_DESKTOP } from '@core/util/runtimeEnv'
 
-export const AVAILABLE_LANGUAGES = ['en', 'es', 'se'] as const
+// EN only for now — re-add 'es', 'se' when the translated content is ready.
+export const AVAILABLE_LANGUAGES = ['en'] as const
 export type Language = (typeof AVAILABLE_LANGUAGES)[number]
 export const DEFAULT_LANGUAGE: Language = 'en'
 

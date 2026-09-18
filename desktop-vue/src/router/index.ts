@@ -13,6 +13,7 @@ export const router = createRouter({
     { path: '/read', name: 'readHome', component: () => import('@/views/ReadHome.vue') },
     { path: '/read/:book/:section', name: 'readSection', component: () => import('@/views/ReadSection.vue') },
     { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
+    { path: '/about', name: 'about', component: () => import('@/views/AboutView.vue') },
     { path: '/demo/input', name: 'inputDemo', component: () => import('@/views/InputDemo.vue') },
     { path: '/demo/problem', name: 'problemDemo', component: () => import('@/views/ProblemDemo.vue') },
     { path: '/demo/lesson', name: 'lessonDemo', component: () => import('@/views/LessonDemo.vue') },

@@ -46,3 +46,7 @@ pnpm-lock.yaml
 # cnxml-pipeline: cloned converters + build output (regenerate, don't commit)
 /cnxml/work
 
+
+# desktop-vue standalone Tauri app
+desktop-vue/src-tauri/target/
+desktop-vue/src-tauri/gen/

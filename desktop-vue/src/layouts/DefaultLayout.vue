@@ -32,6 +32,11 @@ const menuOptions = [
     icon: () => h('span', { class: 'i-lucide-settings text-16px' }),
     key: 'settings',
   },
+  {
+    label: () => h(RouterLink, { to: { path: '/about' } }, { default: () => 'About' }),
+    icon: () => h('span', { class: 'i-lucide-info text-16px' }),
+    key: 'about',
+  },
 ]
 
 // Active menu entry derived from the route group.
@@ -61,7 +66,7 @@ const activeKey = computed(() => {
           class="flex-y-center gap-2 no-underline color-inherit h-14 px-4 border-b border-gray-200 dark:border-gray-700"
         >
           <span class="i-lucide-graduation-cap text-xl text-[#1976D2] shrink-0" />
-          <span v-if="!collapsed" class="font-bold truncate">OATutor</span>
+          <span v-if="!collapsed" class="font-bold truncate">OATutor Desktop</span>
         </RouterLink>
 
         <NMenu
@@ -78,6 +83,7 @@ const activeKey = computed(() => {
           class="p-3 border-t border-gray-200 dark:border-gray-700 flex-y-center gap-2"
         >
           <NSelect
+            v-if="langOptions.length > 1"
             :value="locale.platformLanguage"
             :options="langOptions"
             size="tiny"

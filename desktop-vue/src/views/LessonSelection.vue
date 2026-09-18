@@ -46,7 +46,7 @@ function openSection(courseName: string, lessonName: string) {
   <div class="max-w-6xl mx-auto p-6">
     <div class="mb-6">
       <h2 class="text-xl font-bold m-0 mb-3">
-        {{ t('lessonSelection.welcomeTo') }} {{ SITE_NAME.replace(/\s/g, '') }}!
+        {{ t('lessonSelection.welcomeTo') }} {{ SITE_NAME }}!
       </h2>
       <div class="flex-y-center gap-3">
         <span class="text-gray-600">

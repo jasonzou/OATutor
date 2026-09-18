@@ -4,13 +4,23 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.20.0",
+  "author": "Zachary A. Pardos (https://github.com/zpardos)",
+  "contributors": [
+    {
+      "name": "Jason Zou",
+      "url": "https://github.com/jasonzou/OATutor-Desktop"
+    }
+  ],
   "scripts": {
     "dev": "vite --port 3002",
     "build": "vue-tsc --noEmit && vite build",
     "build:fast": "vite build",
     "preview": "vite preview --port 3002",
     "typecheck": "vue-tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",
@@ -24,6 +34,7 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.122",
+    "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^26.2.0",
     "@unocss/preset-rem-to-px": "^66.7.5",
     "@unocss/reset": "^66.7.5",
