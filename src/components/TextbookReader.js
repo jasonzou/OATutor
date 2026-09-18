@@ -64,6 +64,21 @@ export default function TextbookReader() {
     const meta = textbookSectionByBook(bookId, section);
     const title = meta ? `${section} ${meta.title}` : `Section ${section}`;
 
+    // Hash routing means an in-content anchor <a href="#id"> would navigate
+    // the router instead of scrolling; intercept and scroll manually.
+    const onContentClick = (e) => {
+        const a = e.target.closest?.('a[href^="#"]');
+        if (!a) return;
+        const id = decodeURIComponent(
+            (a.getAttribute("href") || "").slice(1)
+        );
+        const target = id && document.getElementById(id);
+        if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
+
     return (
         <>
             <BrandLogoNav />
@@ -95,6 +110,7 @@ export default function TextbookReader() {
                 <div
                     ref={ref}
                     className="cnx-content"
+                    onClick={onContentClick}
                     dangerouslySetInnerHTML={
                         state.html ? { __html: state.html } : undefined
                     }

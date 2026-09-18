@@ -171,7 +171,15 @@ class ProblemInput extends React.Component {
         }
         
         try {
-            window.mathVirtualKeyboard.layouts = [keyboardType];
+            // MathLive asserts on unknown layout names (including the empty
+            // keyboardType most lessons have) — fall back to "default".
+            const KNOWN_LAYOUTS = [
+                "default", "numeric", "functions", "symbols", "alphabetic",
+                "greek", "expr-eq", "numeric-shapes", "compact",
+            ];
+            window.mathVirtualKeyboard.layouts = [
+                KNOWN_LAYOUTS.includes(keyboardType) ? keyboardType : "default",
+            ];
         } catch {
             window.mathVirtualKeyboard.layouts = ["default"];
         }

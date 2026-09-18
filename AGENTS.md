@@ -247,11 +247,14 @@ for `npm test`**; dev and build no longer use them.
   `shared/textbook.ts`), and **Settings** (`/settings`, dark + language).
   Sider collapse persists via `@vueuse` `useStorage`.
 - Reading mode (Phase B, done): `views/ReadSection.vue` at `/read/:book/:section`
-  fetches the staged official fragment (`shared/textbook.ts` `contentDirFor`
-  maps book -> `public/textbook/calc1/`), injects it (`.cnx-content` styling for
-  figures/abstracts/exercises/tables), and typesets with **MathJax
-  `tex-mml-chtml.js`** (swapped in `index.html` — handles both problem `$$` TeX
-  and textbook MathML). Prev/next section nav + "Open in OpenStax" included.
+  renders the **same pre-rendered content as the in-question section panel** —
+  it mounts `SectionContent.vue` (with `hide-title`, since the view renders its
+  own header), so both use `public/textbook/<book>/<section>.html`, the shared
+  `.cnx-content` styling, and MathJax typesetting (incl. the solution
+  `<details>` toggle listener). Prev/next section nav + "Open in OpenStax"
+  included. The older `public/textbook/calc1/` official-cnxml set (native
+  MathML + `calc1/media/` figures, staged by `stageTextbook.js`) is no longer
+  referenced by the app but is kept on disk.
 - Durable progress: `shared/store/progress.ts` (Pinia) persists a **userID** and
   per-lesson `{completed problem ids, BKT mastery snapshot}` to localStorage
   (`oatutor-progress`) and mirrors writes to the Tauri store on desktop

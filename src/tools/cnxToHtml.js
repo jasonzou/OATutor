@@ -133,31 +133,99 @@ function hoistMediaAlt(node) {
 
 /* ---------- MathML -> LaTeX (for the reader; rendered by existing MathJax) ---------- */
 
+// Unicode chars that appear in OpenStax MathML tokens but are not valid raw
+// TeX (MathJax rejects them -> whole equation stays unrendered). Mapped per
+// character; list built from a frequency scan of the book's mi/mo/mn/mtext.
+const MATH_CHARS = {
+    "−": "-", "–": "-", "—": "-",
+    "′": "'", "″": "''", "‴": "'''", "’": "'",
+    "“": "``", "”": "''",
+    "×": "\\times ", "÷": "\\div ",
+    "≈": "\\approx ", "≅": "\\cong ", "≃": "\\simeq ", "∼": "\\sim ",
+    "∘": "\\circ ", "·": "\\cdot ",
+    "∪": "\\cup ", "∩": "\\cap ", "∅": "\\emptyset ",
+    "∑": "\\sum ", "∏": "\\prod ", "∫": "\\int ",
+    "⇒": "\\Rightarrow ", "⇔": "\\Leftrightarrow ", "←": "\\leftarrow ",
+    "→": "\\to ", "≤": "\\le ", "≥": "\\ge ", "≠": "\\ne ", "±": "\\pm ",
+    "⋯": "\\cdots ", "…": "\\dots ", "∈": "\\in ", "∞": "\\infty ",
+    "∂": "\\partial ", "∉": "\\notin ",
+    "°": "^{\\circ}", "ℓ": "\\ell ", "◦": "\\circ ",
+    "∴": "\\therefore ", "∵": "\\because ",
+    "⌊": "\\lfloor ", "⌋": "\\rfloor ", "⌈": "\\lceil ", "⌉": "\\rceil ",
+    "∓": "\\mp ", "⋮": "\\vdots ", "□": "\\square ",
+    "ϵ": "\\epsilon ", "ϕ": "\\phi ", "Α": "A", "Β": "B", "Ε": "E",
+    "Ζ": "Z", "Η": "H", "Ι": "I", "Κ": "K", "Μ": "M", "Ν": "N",
+    "Ο": "O", "Ρ": "P", "Τ": "T", "Υ": "\\Upsilon ", "Χ": "X",
+    "¥": "\\text{¥}", "¢": "\\text{¢}", "\u200b": "", "\ufeff": "",
+    "⏟": "", "⏞": "",
+    "ℝ": "\\mathbb{R}", "ℕ": "\\mathbb{N}", "ℤ": "\\mathbb{Z}",
+    "ℚ": "\\mathbb{Q}", "ℂ": "\\mathbb{C}",
+    "α": "\\alpha ", "β": "\\beta ", "γ": "\\gamma ", "δ": "\\delta ",
+    "ε": "\\varepsilon ", "ζ": "\\zeta ", "η": "\\eta ", "θ": "\\theta ",
+    "ι": "\\iota ", "κ": "\\kappa ", "λ": "\\lambda ", "μ": "\\mu ",
+    "ν": "\\nu ", "ξ": "\\xi ", "π": "\\pi ", "ρ": "\\rho ", "σ": "\\sigma ",
+    "τ": "\\tau ", "υ": "\\upsilon ", "φ": "\\varphi ", "χ": "\\chi ",
+    "ψ": "\\psi ", "ω": "\\omega ",
+    "Γ": "\\Gamma ", "Δ": "\\Delta ", "Θ": "\\Theta ", "Λ": "\\Lambda ",
+    "Ξ": "\\Xi ", "Π": "\\Pi ", "Σ": "\\Sigma ", "Υ": "\\Upsilon ",
+    "Φ": "\\Phi ", "Ψ": "\\Psi ", "Ω": "\\Omega ",
+};
+
+function mapMathChars(s) {
+    let out = "";
+    for (const ch of s) out += MATH_CHARS[ch] ?? ch;
+    return out;
+}
+
 function texText(s) {
     // text inside mi/mn/mo/mtext
-    return s
-        .replace(/\s+/g, "")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">");
+    return mapMathChars(
+        s
+            .replace(/\s+/g, "")
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+    );
 }
 
 function texOperator(s) {
-    const t = texText(s);
+    // Escape TeX specials in the RAW operator text first ({ } & # $ % _ \) —
+    // doing it after the unicode map would double the macros' backslashes —
+    // then map unicode. This is what makes the "{" of a piecewise function
+    // safe instead of opening an unbalanced group.
+    const t = s
+        .replace(/\s+/g, "")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/([{}#$%_\\])/g, "\\$1");
+    return mapMathChars(t);
+}
+
+function tableRows(node) {
+    const rows = node.children.filter((c) => localName(c.tag) === "mtr");
+    return rows
+        .map((tr) =>
+            tr.children
+                .filter((c) => localName(c.tag) === "mtd")
+                .map(mathToLatex)
+                .join(" & ")
+        )
+        .join(" \\\\ ");
+}
+
+// OpenStax piecewise functions are authored as
+// mrow( mo"{", mrow( mtable ) ) — render as \begin{cases}, like the print book.
+function piecewiseCases(node) {
+    const c = node.children || [];
     return (
-        {
-            "→": "\\to ",
-            "≤": "\\le ",
-            "≥": "\\ge ",
-            "≠": "\\ne ",
-            "±": "\\pm ",
-            "⋯": "\\cdots ",
-            "…": "\\dots ",
-            "∈": "\\in ",
-            "∞": "\\infty ",
-            "∂": "\\partial ",
-            "·": "\\cdot ",
-        }[t] || t
+        c.length === 2 &&
+        localName(c[0].tag) === "mo" &&
+        textOf(c[0]).trim() === "{" &&
+        localName(c[1].tag) === "mrow" &&
+        (c[1].children || []).length === 1 &&
+        localName(c[1].children[0].tag) === "mtable" &&
+        `\\begin{cases}${tableRows(c[1].children[0])}\\end{cases}`
     );
 }
 
@@ -177,19 +245,32 @@ function mathToLatex(node) {
     };
     switch (name) {
         case "math":
-        case "mrow":
         case "mstyle":
         case "mphantom":
         case "mpadded":
             return kids();
+        case "mrow": {
+            const cases = piecewiseCases(node);
+            if (cases) return cases;
+            return kids();
+        }
         case "mi":
             return texText(textOf(node));
         case "mn":
             return texText(textOf(node));
         case "mo":
             return texOperator(textOf(node));
-        case "mtext":
-            return `\\text{${texText(textOf(node))}}`;
+        case "mtext": {
+            // escape TeX specials in raw text first, then map unicode (order
+            // matters — escaping after mapping would double the backslashes)
+            const txt = textOf(node)
+                .replace(/\s+/g, " ")
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/([{}#$%_\\])/g, "\\$1");
+            return `\\text{${mapMathChars(txt)}}`;
+        }
         case "mfrac": {
             const [a, b] = pair();
             return `\\frac{${mathToLatex(a)}}{${mathToLatex(b)}}`;
@@ -215,8 +296,8 @@ function mathToLatex(node) {
         case "mspace":
             return "\\,";
         case "mfenced": {
-            const o = node.attrs.open || "(";
-            const c = node.attrs.close || ")";
+            const o = texOperator(node.attrs.open || "(").trim() || "\\{";
+            const c = texOperator(node.attrs.close || ")").trim() || "\\}";
             return `\\left${o} ${kids()} \\right${c}`;
         }
         case "munderover": {
@@ -231,19 +312,8 @@ function mathToLatex(node) {
             const [a, b] = pair();
             return `${group(a)}^{${mathToLatex(b)}}`;
         }
-        case "mtable": {
-            const rows = node.children.filter(
-                (c) => localName(c.tag) === "mtr"
-            );
-            return `\\begin{matrix}${rows
-                .map((tr) =>
-                    tr.children
-                        .filter((c) => localName(c.tag) === "mtd")
-                        .map(mathToLatex)
-                        .join(" & ")
-                )
-                .join(" \\\\ ")}\\end{matrix}`;
-        }
+        case "mtable":
+            return `\\begin{matrix}${tableRows(node)}\\end{matrix}`;
         default:
             return kids();
     }
@@ -314,6 +384,25 @@ function serialize(node, ctx) {
         }
         case "term":
             return `<em class="term">${kids()}</em>`;
+        // End-of-module glossary: definition(term, meaning) pairs -> <dl>
+        case "glossary":
+            return `<section class="cnx-glossary"><h${ctx.h}>Glossary</h${ctx.h}><dl>${kids()}</dl></section>`;
+        case "definition": {
+            const c = node.children || [];
+            const dt = c
+                .filter((k) => localName(k.tag) === "term")
+                .map((k) => `<dt>${(k.children || []).map((g) => serialize(g, ctx)).join("")}</dt>`)
+                .join("");
+            const dd = c
+                .filter((k) => localName(k.tag) === "meaning")
+                .map((k) => `<dd>${(k.children || []).map((g) => serialize(g, ctx)).join("")}</dd>`)
+                .join("");
+            const rest = c
+                .filter((k) => !["term", "meaning"].includes(localName(k.tag)))
+                .map((k) => serialize(k, ctx))
+                .join("");
+            return `${rest}<div>${dt}${dd}</div>`;
+        }
         case "equation": {
             const id = node.attrs.id || "";
             const t = id ? ctx.targets[id] : null;
@@ -367,7 +456,23 @@ function serialize(node, ctx) {
             ctx.inExample = null;
             return out;
         }
-        case "exercise":
+        case "exercise": {
+            const id = node.attrs.id || "";
+            let header = "";
+            if (node._num) {
+                const titleInner = (node.children || [])
+                    .filter((c) => c.tag === "title" || c.tag === "name")
+                    .map((c) => (c.children || []).map((g) => serialize(g, ctx)).join(""))
+                    .join("");
+                const h = Math.min(ctx.h + 1, 6);
+                header = `<h${h} class="cnx-exercise-header"><span class="cnx_label">${node._num.label} ${node._num.n}${titleInner ? ": " : ""}</span>${titleInner}</h${h}>`;
+            }
+            const contents = (node.children || [])
+                .filter((c) => !["title", "name", "label"].includes(c.tag))
+                .map((c) => serialize(c, ctx))
+                .join("");
+            return `<div class="cnx-exercise"${id ? ` id="${id}"` : ""}>${header}${contents}</div>`;
+        }
         case "problem":
         case "statement":
             return `<div class="cnx-${name}">${kids()}</div>`;
@@ -377,9 +482,15 @@ function serialize(node, ctx) {
         // and under strict CSP in the Tauri webview).
         case "solution":
             return `<details class="cnx-solution"><summary>Solution</summary><div class="solution-contents">${kids()}</div></details>`;
-        case "section":
+        case "section": {
+            // scope the heading depth: restore after the section closes so
+            // siblings after deep sections (e.g. the glossary) aren't stuck at h6
+            const prev = ctx.h;
             ctx.h = Math.min(ctx.h + 1, 6);
-            return `<section>${kids()}</section>`;
+            const out = `<section>${kids()}</section>`;
+            ctx.h = prev;
+            return out;
+        }
         case "link": {
             // In-module cross-reference: resolve to "Figure 3"-style links
             // (behavior of the official cnxml_render.xsl).
@@ -470,9 +581,23 @@ function collectReferencedIds(node, set) {
     return set;
 }
 
-function numberTargets(node, counters, targets, referenced) {
+function numberTargets(node, counters, targets, referenced, inExample) {
     const name = localName(node.tag);
-    if (NUMBERED[name]) {
+    if (name === "exercise") {
+        // XSL semantics: exercises inside an example are "Problem N" (counter
+        // restarting per example, no visible header — the problem title already
+        // carries "Example N: Title"); standalone (end-of-section) exercises are
+        // "Exercise N" module-wide and get a numbered header.
+        if (inExample) {
+            counters.__problem = (counters.__problem || 0) + 1;
+            if (node.attrs.id)
+                targets[node.attrs.id] = { label: "Problem", n: counters.__problem };
+        } else {
+            counters.exercise = (counters.exercise || 0) + 1;
+            node._num = { label: "Exercise", n: counters.exercise };
+            if (node.attrs.id) targets[node.attrs.id] = node._num;
+        }
+    } else if (NUMBERED[name]) {
         // Equations: only number the ones a <link> actually points at, so
         // unreferenced display math carries no "(N)" chrome.
         const wantNumber =
@@ -484,7 +609,13 @@ function numberTargets(node, counters, targets, referenced) {
         }
     }
     for (const child of node.children || [])
-        numberTargets(child, counters, targets, referenced);
+        numberTargets(
+            child,
+            name === "example" ? { ...counters, __problem: 0 } : counters,
+            targets,
+            referenced,
+            inExample || name === "example"
+        );
     return targets;
 }
 
@@ -501,7 +632,7 @@ function cnxToHtml(src, opts = {}) {
     };
     const tree = parseXml(src);
     hoistMediaAlt(tree);
-    ctx.targets = numberTargets(tree, {}, {}, collectReferencedIds(tree, new Set()));
+    ctx.targets = numberTargets(tree, {}, {}, collectReferencedIds(tree, new Set()), false);
     const body = tree.children.map((c) => serialize(c, ctx)).join("\n").trim();
     const h1 =
         opts.title ||

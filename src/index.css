@@ -176,6 +176,11 @@ blockquote:before {
     overflow-x: auto;
     border-radius: 2px;
 }
+.cnx-content .cnx-exercise .cnx-exercise-header {
+    padding-bottom: 0.2em;
+    margin: 0.2em 0 0.5em;
+    border-bottom: 1px solid currentColor;
+}
 /* Solutions: hidden by default, toggled via the <summary> button */
 .cnx-content details.cnx-solution {
     margin: 0.6em 0;
@@ -190,6 +195,23 @@ blockquote:before {
     padding-bottom: 0.2em;
     margin-bottom: 0.4em;
     border-bottom: 1px solid currentColor;
+}
+/* End-of-module glossary (dl of term/meaning pairs) */
+.cnx-content .cnx-glossary dt {
+    font-weight: bold;
+    margin-top: 0.7em;
+}
+.cnx-content .cnx-glossary dd {
+    margin: 0.15em 0 0.45em 1.4em;
+}
+/* In-page cross-reference targets shouldn't hide under sticky page chrome */
+.cnx-content figure[id],
+.cnx-content aside[id],
+.cnx-content .cnx-example[id],
+.cnx-content .cnx-exercise[id],
+.cnx-content table[id],
+.cnx-content .equation[id] {
+    scroll-margin-top: 2.5rem;
 }
 /* Lists: explicit markers (keeps in sync with the Vue app, which must undo
    the UnoCSS preflight reset) */
