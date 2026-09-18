@@ -4,7 +4,10 @@
 // the app's MathJax instance. Content-only: page chrome (headers, back nav) is
 // the caller's job, so this can back both the question-view panel and a future
 // /textbook route.
-const props = defineProps<{ bookId: string; section: string }>()
+const props = withDefaults(
+  defineProps<{ bookId: string; section: string; hideTitle?: boolean }>(),
+  { hideTitle: false },
+)
 
 const el = ref<HTMLElement | null>(null)
 const html = ref<string | null>(null)
@@ -43,6 +46,20 @@ function onToggle(e: Event) {
     typeset(t)
 }
 
+// The app uses hash routing, so an in-content anchor <a href="#id"> would
+// navigate the router to route "/id" instead of scrolling. Intercept and
+// scroll to the element ourselves.
+function onClick(e: MouseEvent) {
+  const a = (e.target as HTMLElement)?.closest?.('a[href^="#"]')
+  if (!a) return
+  const id = decodeURIComponent((a.getAttribute('href') || '').slice(1))
+  const target = id && document.getElementById(id)
+  if (target) {
+    e.preventDefault()
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
 onMounted(() => {
   document.addEventListener('toggle', onToggle, true)
   load()
@@ -58,6 +75,6 @@ watch(html, () => {
   <div>
     <p v-if="error" class="text-sm text-red-600">Failed to load this section ({{ error }}).</p>
     <p v-if="!html && !error" class="text-sm text-gray-500">Loading…</p>
-    <div ref="el" class="cnx-content" v-html="html ?? undefined" />
+    <div ref="el" class="cnx-content" :class="{ 'cnx-hide-title': hideTitle }" v-html="html ?? undefined" @click="onClick" />
   </div>
 </template>

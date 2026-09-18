@@ -5,19 +5,29 @@
 import { openExternal } from '@core/util/openExternal'
 import { sectionNumberOfLesson, textbookSectionUrl } from '@core/util/textbookLink'
 import { useTranslation } from '@/shared/composables/useTranslation'
+import { SITE_NAME } from '@/shared/config'
 import { courseLanguage, courseNames, defaultCourseName, lessonsForCourse } from '@/shared/lessons'
 
 const { t, locale } = useTranslation()
 const router = useRouter()
 
-const selectedCourse = ref(defaultCourseName())
+// Remember the course across visits (and app restarts).
+const COURSE_STORAGE_KEY = 'oatutor-selected-course'
+const storedCourse = localStorage.getItem(COURSE_STORAGE_KEY)
+const selectedCourse = ref(
+  storedCourse && courseNames().includes(storedCourse)
+    ? storedCourse
+    : defaultCourseName(),
+)
 
 // Selecting a course enters it for locale purposes (mirrors the React app's
 // Platform): the course's declared language becomes the session language.
 watch(
   selectedCourse,
   (name) => {
-    if (name) locale.enterCourse(name, courseLanguage(name))
+    if (!name) return
+    localStorage.setItem(COURSE_STORAGE_KEY, name)
+    locale.enterCourse(name, courseLanguage(name))
   },
   { immediate: true },
 )
@@ -34,29 +44,35 @@ function openSection(courseName: string, lessonName: string) {
 
 <template>
   <div class="max-w-6xl mx-auto p-6">
-    <div class="flex-y-center justify-between mb-4">
-      <h2 class="text-xl font-bold m-0">
-        {{ t('lessonSelection.welcomeTo') }} {{ t('lessonSelection.select') }}
-        {{ t('lessonSelection.course') }}
+    <div class="mb-6">
+      <h2 class="text-xl font-bold m-0 mb-3">
+        {{ t('lessonSelection.welcomeTo') }} {{ SITE_NAME.replace(/\s/g, '') }}!
       </h2>
-      <NSelect
-        v-model:value="selectedCourse"
-        :options="courseOptions"
-        filterable
-        class="w-100"
-      />
+      <div class="flex-y-center gap-3">
+        <span class="text-gray-600">
+          {{ t('lessonSelection.select') }} {{ t('lessonSelection.course') }}:
+        </span>
+        <NSelect
+          v-model:value="selectedCourse"
+          :options="courseOptions"
+          filterable
+          class="w-100"
+        />
+      </div>
     </div>
 
-    <p class="text-gray-500 mb-4">
-      {{ lessons.length }} lessons
-    </p>
+    <div class="flex-y-center justify-between mb-4">
+      <h3 class="text-lg font-semibold m-0">{{ selectedCourse }}</h3>
+      <span class="text-gray-500">{{ lessons.length }} lessons</span>
+    </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <NCard
         v-for="lesson in lessons"
         :key="lesson.id"
         hoverable
-        class="rounded-lg relative"
+        class="rounded-lg relative cursor-pointer"
+        @click="router.push(`/lessons/${lesson.id}`)"
       >
         <!-- top-right: browse all problems -->
         <NButton
@@ -76,15 +92,12 @@ function openSection(courseName: string, lessonName: string) {
         <div class="text-gray-600 mt-1 min-h-2em">
           {{ lesson.topics }}
         </div>
-        <div class="mt-4 flex gap-2">
-          <NButton size="small" type="primary" @click="router.push(`/lessons/${lesson.id}`)">
-            {{ t('lessonSelection.onlyselect') }}
-          </NButton>
+        <div class="mt-4 flex justify-end">
           <NButton
             v-if="textbookSectionUrl(selectedCourse, sectionNumberOfLesson(lesson))"
             size="small"
             tertiary
-            @click="openSection(selectedCourse, lesson.name)"
+            @click.stop="openSection(selectedCourse, lesson.name)"
           >
             <template #icon>
               <span class="i-lucide-external-link" />

@@ -17,6 +17,10 @@ body {
   line-height: 1.65;
   color: #1f2328;
 
+  // Reader view renders its own section header; hide the fragment's <h1>
+  // (first child of the emitted .cnx-module wrapper).
+  &.cnx-hide-title > .cnx-module > h1:first-child { display: none; }
+
   h1, h2, h3, h4, h5, h6 {
     margin: 0.8em 0 0.4em;
     line-height: 1.3;
@@ -84,6 +88,12 @@ body {
     color: #424242;
     overflow-x: auto;
     border-radius: 2px;
+
+    .cnx-exercise-header {
+      padding-bottom: 0.2em;
+      margin: 0.2em 0 0.5em;
+      border-bottom: 1px solid currentColor;
+    }
   }
   .cnx-problem {
     margin: 0.8em 0;
@@ -109,6 +119,16 @@ body {
     }
   }
   // preflight sets list-style:none — restore markers
+  // end-of-module glossary (dl of term/meaning pairs)
+  .cnx-glossary {
+    margin-top: 1.6em;
+
+    dt { font-weight: bold; margin-top: 0.7em; }
+    dd { margin: 0.15em 0 0.45em 1.4em; }
+  }
+  // in-page cross-reference targets shouldn't hide under sticky page chrome
+  figure[id], aside[id], .cnx-example[id], .cnx-exercise[id],
+  table[id], .equation[id] { scroll-margin-top: 2.5rem; }
   ol { list-style: decimal; }
   ul { list-style: disc; }
   ol, ul { padding-left: 1.4em; margin: 0.55em 0; }

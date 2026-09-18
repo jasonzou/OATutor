@@ -91,13 +91,19 @@ onMounted(() => {
 })
 watch(() => props.keyboardType, applyKeyboardLayout)
 
+// MathLive's virtual-keyboard layout shorthands — anything else (including
+// the empty keyboardType most lessons have) asserts "unknown keyboard layout".
+const MATHLIVE_LAYOUTS = new Set([
+  'default', 'numeric', 'functions', 'symbols', 'alphabetic', 'greek',
+  'expr-eq', 'numeric-shapes', 'compact',
+])
+
 function applyKeyboardLayout(layout: string) {
-  try {
-    ;(window as unknown as { mathVirtualKeyboard: { layouts: unknown[] } })
-      .mathVirtualKeyboard.layouts = [layout]
-  } catch {
-    /* ignore */
-  }
+  const kb = (
+    window as unknown as { mathVirtualKeyboard?: { layouts: unknown[] } }
+  ).mathVirtualKeyboard
+  if (!kb) return
+  kb.layouts = [MATHLIVE_LAYOUTS.has(layout) ? layout : 'default']
 }
 </script>
 

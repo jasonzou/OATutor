@@ -173,7 +173,10 @@ function exit() {
         </div>
       </div>
       <NButton quaternary size="small" @click="exit">
-        Exit lesson
+        <template #icon>
+          <span class="i-lucide-home" />
+        </template>
+        Home
       </NButton>
     </div>
     <div class="mb-4">
